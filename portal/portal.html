@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRU — Portal</title>
+<style>
+  :root { --bg:#070b10; --panel:#0e1720; --line:#214052; --text:#d5e4ee; --dim:#7e96a7; --accent:#7fd0c4; --warn:#e2b15a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 ui-sans-serif, system-ui, sans-serif; }
+  header { padding:18px 18px 8px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; align-items:end; }
+  h1 { margin:0; font-size:18px; letter-spacing:.14em; }
+  a { color:var(--accent); }
+  .meta { color:var(--dim); font-size:12px; margin-top:6px; }
+  main { max-width:860px; margin:0 auto; padding:16px; }
+  form { display:flex; gap:8px; }
+  input, textarea { width:100%; background:#0b1218; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font:inherit; }
+  button { background:#10202b; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); color:var(--accent); }
+  .card { margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--panel); }
+  .tag { color:var(--accent); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  .warn { color:var(--warn); }
+  .src { color:var(--dim); font-size:12px; margin-top:8px; }
+  .drop { margin-top:14px; border:1px dashed #3d6274; border-radius:12px; padding:16px; color:var(--dim); text-align:center; }
+  .drop.hot { border-color:var(--accent); color:var(--accent); }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  pre { white-space:pre-wrap; font:14px/1.45 ui-sans-serif, system-ui, sans-serif; margin:8px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TRU · PORTAL</h1>
+    <div class="meta" id="meta">Loading packs…</div>
+  </div>
+  <a href="tru.html">Canon lane</a>
+</header>
+<main>
+  <form id="ask">
+    <input id="q" autocomplete="off" placeholder="Ask what this portal was built to know.">
+    <button type="submit">Weigh</button>
+  </form>
+  <div id="out"></div>
+  <div class="drop" id="drop">Drop a .txt, .md, or .json manual here. It stays in this browser. Nothing is uploaded.</div>
+  <div class="actions">
+    <button id="export" type="button">Bake a portable HTML</button>
+    <button id="clear" type="button">Clear local packs</button>
+  </div>
+  <div class="card">
+    <div class="tag">What this page will and will not do</div>
+    <p>It answers from text that was built into it, or from a file you drop. It quotes the source. If no pack contains the thing, the gap stays open. It is not a copy of Grok, and it will not fill a hole with a generated guess.</p>
+  </div>
+</main>
+<script>
+const BUILT = [
+  {title:"Portal rule", body:"The portal is a second static page. A canon miss hands the question here by the URL hash. This page searches only packs built into the file and packs stored in IndexedDB on this machine. A match is a quotation with a source name. No match stays a gap. Nothing is sent to a server."},
+  {title:"GitHub Pages limits", body:"GitHub Pages serves static files. A site should stay under about 1 GB. A single file over 100 MB is a warning sign. Relative fetch works on the github.io origin. It does not work the same from a downloaded file opened as file://. That is why local manuals go through the File API and IndexedDB, and why a portable copy is baked into one HTML."},
+  {title:"IndexedDB", body:"IndexedDB is browser storage. The first drop parses the manual into chunks and writes those chunks locally. Later opens read the index without downloading the manual again. Clearing site data clears the packs. The baked HTML export is the copy you can carry."},
+  {title:"Honest gap", body:"A gap is not a failure of tone. It means no held source matched the question. The canon lane may open this portal. This portal may still gap. The repair is to drop a source that actually contains the answer, then ask again. Do not paraphrase a missing source into an answer."},
+  {title:"Memory on a Chromebook", body:"A 30 MB HTML can sit near 60 MB of tab memory. A 100 MB JSON parsed into objects can swell several times in the heap. Chunk on ingest. Keep a light index. Do not parse every manual at boot. Pull a chunk only when a query hits its index row."}
+];
+
+const DB = "tru-portal";
+const STORE = "chunks";
+function openDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE, {keyPath:"id"});
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function allChunks(){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const q = db.transaction(STORE).objectStore(STORE).getAll();
+    q.onsuccess = () => res(q.result || []);
+    q.onerror = () => rej(q.error);
+  });
+}
+async function putChunks(rows){
+  const db = await openDB();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(STORE, "readwrite");
+    rows.forEach(row => tx.objectStore(STORE).put(row));
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function clearChunks(){
+  const db = await openDB();
+  await new Promise((res, rej) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+function tokens(s){ return (s.toLowerCase().match(/[a-z0-9']+/g) || []).filter(w => w.length > 2); }
+function score(q, text){
+  const qt = tokens(q);
+  if (!qt.length) return 0;
+  const bag = text.toLowerCase();
+  let n = 0;
+  qt.forEach(w => { if (bag.includes(w)) n++; });
+  return n / qt.length;
+}
+function chunkText(name, text){
+  const parts = text.split(/\n{2,}/).flatMap(p => p.length > 900 ? p.match(/[\s\S]{1,800}/g) : [p]);
+  return parts.filter(p => p && p.trim().length > 40).slice(0, 400).map((body, i) => ({
+    id: name + "::" + i + "::" + Math.random().toString(36).slice(2, 7),
+    title: name,
+    body: body.trim()
+  }));
+}
+function answer(q, local){
+  const pool = BUILT.map(x => ({...x, lane:"built into this page"})).concat(local.map(x => ({...x, lane:"local pack"})));
+  return pool.map(item => ({...item, s: score(q, item.title + " " + item.body)})).filter(x => x.s >= 0.34).sort((a,b) => b.s - a.s).slice(0, 3);
+}
+function render(q, hits){
+  const out = document.getElementById("out");
+  if (!hits.length){
+    out.innerHTML = `<div class="card"><div class="tag warn">GAP · portal has no source</div><p>No built pack and no local pack matched “${q.replace(/[&<>]/g, c => ({'&':'&','<':'<','>':'>'}[c]))}". This page will not guess. Drop a manual that contains the answer, then ask again.</p></div>`;
+    return;
+  }
+  out.innerHTML = hits.map(h => `<div class="card"><div class="tag">${h.title}</div><pre>${h.body.replace(/[&<>]/g, c => ({'&':'&','<':'<','>':'>'}[c]))}</pre><div class="src">SOURCE · ${h.lane} · overlap ${Math.round(h.s*100)}% · quotation, not a generated rewrite</div></div>`).join("");
+}
+async function refreshMeta(){
+  const local = await allChunks();
+  const names = [...new Set(local.map(x => x.title))];
+  document.getElementById("meta").textContent = BUILT.length + " built notes · " + local.length + " local chunks" + (names.length ? " · " + names.join(", ") : "");
+  return local;
+}
+async function weigh(q){
+  const local = await refreshMeta();
+  render(q, answer(q, local));
+}
+document.getElementById("ask").onsubmit = (e) => { e.preventDefault(); const q = document.getElementById("q").value.trim(); if (q) weigh(q); };
+
+async function ingest(file){
+  const text = await file.text();
+  let rows;
+  if (file.name.endsWith(".json")){
+    const data = JSON.parse(text);
+    const list = Array.isArray(data) ? data : (data.chunks || []);
+    rows = list.map((item, i) => ({id:file.name+"::"+i, title:item.title || file.name, body:item.body || item.text || ""})).filter(x => x.body);
+  } else rows = chunkText(file.name, text);
+  await putChunks(rows);
+  await refreshMeta();
+  document.getElementById("out").innerHTML = `<div class="card"><div class="tag">Built</div><p>${rows.length} chunks from ${file.name} are now in this browser. Ask again.</p></div>`;
+}
+const drop = document.getElementById("drop");
+drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("hot"); };
+drop.ondragleave = () => drop.classList.remove("hot");
+drop.ondrop = async (e) => { e.preventDefault(); drop.classList.remove("hot"); const f = e.dataTransfer.files[0]; if (f) ingest(f); };
+drop.onclick = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".txt,.md,.json,text/plain";
+  input.onchange = () => { if (input.files[0]) ingest(input.files[0]); };
+  input.click();
+};
+document.getElementById("clear").onclick = async () => { await clearChunks(); await refreshMeta(); };
+document.getElementById("export").onclick = async () => {
+  const local = await allChunks();
+  const packed = local.map(({title, body}) => ({title, body}));
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TRU portal bake</title>
+<style>body{margin:0;background:#070b10;color:#d5e4ee;font:15px/1.45 ui-sans-serif,system-ui,sans-serif}main{max-width:820px;margin:0 auto;padding:16px}input,button{font:inherit;padding:12px;border-radius:10px;border:1px solid #214052;background:#0b1218;color:#d5e4ee}form{display:flex;gap:8px}.card{margin-top:12px;border:1px solid #214052;border-radius:12px;padding:12px;background:#0e1720}.tag{color:#7fd0c4;font-size:11px;letter-spacing:.12em;text-transform:uppercase}.warn{color:#e2b15a}</style></head>
+<body><main><h1>TRU · BAKED PORTAL</h1><form id="f"><input id="q" placeholder="Ask the baked packs"><button>Weigh</button></form><div id="o"></div>
+<script>const PACK=${JSON.stringify(packed).replace(/</g,"\\u003c")};
+function score(q,t){const w=(q.toLowerCase().match(/[a-z0-9']+/g)||[]).filter(x=>x.length>2); if(!w.length)return 0; let n=0; const b=t.toLowerCase(); w.forEach(x=>{if(b.includes(x))n++}); return n/w.length}
+document.getElementById("f").onsubmit=e=>{e.preventDefault(); const q=document.getElementById("q").value.trim(); const hits=PACK.map(p=>({...p,s:score(q,p.title+" "+p.body)})).filter(p=>p.s>=0.34).sort((a,b)=>b.s-a.s).slice(0,3);
+document.getElementById("o").innerHTML=hits.length?hits.map(h=>'<div class="card"><div class="tag">'+h.title+'</div><pre>'+h.body.replace(/[&<>]/g,c=>({"&":"&","<":"<",">":">"}[c]))+'</pre></div>').join(""):'<div class="card"><div class="tag warn">GAP</div><p>No baked pack matched. This file will not guess.</p></div>'};
+<\/script></main></body></html>`;
+  const blob = new Blob([html], {type:"text/html"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "TRU-portal-bake.html";
+  a.click();
+};
+const incoming = decodeURIComponent((location.hash.match(/^#q=(.*)$/) || [])[1] || "");
+refreshMeta().then(() => { if (incoming){ document.getElementById("q").value = incoming; weigh(incoming); } });
+</script>
+</body>
+</html>

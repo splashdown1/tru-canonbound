@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRU — Canon lane</title>
+<style>
+  :root { --bg:#070b10; --panel:#0e1720; --line:#214052; --text:#d5e4ee; --dim:#7e96a7; --accent:#7fd0c4; --warn:#e2b15a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 ui-sans-serif, system-ui, sans-serif; }
+  header { padding:18px 18px 8px; border-bottom:1px solid var(--line); }
+  h1 { margin:0; font-size:18px; letter-spacing:.14em; }
+  .meta { color:var(--dim); font-size:12px; margin-top:6px; }
+  main { max-width:820px; margin:0 auto; padding:16px; }
+  form { display:flex; gap:8px; }
+  input { flex:1; background:#0b1218; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font:inherit; }
+  button { background:#10202b; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); color:var(--accent); }
+  .card { margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--panel); }
+  .tag { color:var(--accent); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  .warn { color:var(--warn); }
+  .src { color:var(--dim); font-size:12px; margin-top:8px; }
+  a { color:var(--accent); }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TRU · CANON LANE</h1>
+  <div class="meta" id="meta"></div>
+</header>
+<main>
+  <form id="ask">
+    <input id="q" autocomplete="off" placeholder="Ask from Scripture. A word, a verse, or a phrase.">
+    <button type="submit">Weigh</button>
+  </form>
+  <div id="out"></div>
+</main>
+<script>
+const VERSES = [
+  ["Genesis 1:1","In the beginning God created the heaven and the earth."],
+  ["Genesis 1:3","And God said, Let there be light: and there was light."],
+  ["Exodus 20:3","Thou shalt have no other gods before me."],
+  ["Deuteronomy 6:4","Hear, O Israel: The LORD our God is one LORD."],
+  ["Deuteronomy 6:5","And thou shalt love the LORD thy God with all thine heart, and with all thy soul, and with all thy might."],
+  ["Psalm 23:1","The LORD is my shepherd; I shall not want."],
+  ["Psalm 23:4","Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me."],
+  ["Psalm 119:105","Thy word is a lamp unto my feet, and a light unto my path."],
+  ["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."],
+  ["Isaiah 53:5","But he was wounded for our transgressions, he was bruised for our iniquities: the chastisement of our peace was upon him; and with his stripes we are healed."],
+  ["Isaiah 9:6","For unto us a child is born, unto us a son is given: and the government shall be upon his shoulder: and his name shall be called Wonderful, Counsellor, The mighty God, The everlasting Father, The Prince of Peace."],
+  ["Matthew 5:3","Blessed are the poor in spirit: for theirs is the kingdom of heaven."],
+  ["Matthew 6:33","But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you."],
+  ["Matthew 11:28","Come unto me, all ye that labour and are heavy laden, and I will give you rest."],
+  ["Matthew 22:37","Jesus said unto him, Thou shalt love the Lord thy God with all thy heart, and with all thy soul, and with all thy mind."],
+  ["Matthew 28:19","Go ye therefore, and teach all nations, baptizing them in the name of the Father, and of the Son, and of the Holy Ghost."],
+  ["Mark 12:30","And thou shalt love the Lord thy God with all thy heart, and with all thy soul, and with all thy mind, and with all thy strength: this is the first commandment."],
+  ["Luke 2:11","For unto you is born this day in the city of David a Saviour, which is Christ the Lord."],
+  ["John 1:1","In the beginning was the Word, and the Word was with God, and the Word was God."],
+  ["John 1:14","And the Word was made flesh, and dwelt among us, (and we beheld his glory, the glory as of the only begotten of the Father,) full of grace and truth."],
+  ["John 3:16","For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."],
+  ["John 8:32","And ye shall know the truth, and the truth shall make you free."],
+  ["John 10:10","The thief cometh not, but for to steal, and to kill, and to destroy: I am come that they might have life, and that they might have it more abundantly."],
+  ["John 14:6","Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me."],
+  ["John 15:13","Greater love hath no man than this, that a man lay down his life for his friends."],
+  ["Acts 4:12","Neither is there salvation in any other: for there is none other name under heaven given among men, whereby we must be saved."],
+  ["Romans 3:23","For all have sinned, and come short of the glory of God."],
+  ["Romans 5:8","But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us."],
+  ["Romans 6:23","For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord."],
+  ["Romans 8:28","And we know that all things work together for good to them that love God, to them who are the called according to his purpose."],
+  ["Romans 10:9","That if thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved."],
+  ["1 Corinthians 13:4","Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up."],
+  ["1 Corinthians 13:13","And now abideth faith, hope, charity, these three; but the greatest of these is charity."],
+  ["2 Corinthians 5:17","Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new."],
+  ["Ephesians 2:8","For by grace are ye saved through faith; and that not of yourselves: it is the gift of God:"],
+  ["Ephesians 2:9","Not of works, lest any man should boast."],
+  ["Philippians 4:13","I can do all things through Christ which strengtheneth me."],
+  ["Colossians 3:23","And whatsoever ye do, do it heartily, as to the Lord, and not unto men."],
+  ["2 Timothy 3:16","All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness."],
+  ["Hebrews 11:1","Now faith is the substance of things hoped for, the evidence of things not seen."],
+  ["James 2:17","Even so faith, if it hath not works, is dead, being alone."],
+  ["1 Peter 5:7","Casting all your care upon him; for he careth for you."],
+  ["1 John 1:9","If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness."],
+  ["1 John 4:8","He that loveth not knoweth not God; for God is love."],
+  ["Revelation 21:4","And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away."]
+];
+const TOPICS = {
+  salvation:["John 3:16","Acts 4:12","Romans 6:23","Romans 10:9","Ephesians 2:8"],
+  faith:["Hebrews 11:1","Ephesians 2:8","James 2:17","Proverbs 3:5"],
+  love:["John 3:16","1 Corinthians 13:4","1 Corinthians 13:13","1 John 4:8","John 15:13"],
+  grace:["Ephesians 2:8","Ephesians 2:9","Romans 5:8"],
+  truth:["John 14:6","John 8:32","John 1:14"],
+  shepherd:["Psalm 23:1","Psalm 23:4"],
+  word:["John 1:1","Psalm 119:105","2 Timothy 3:16"]
+};
+const byRef = Object.fromEntries(VERSES);
+document.getElementById("meta").textContent = VERSES.length + " KJV verses in this lane · public domain · honest GAP opens the portal · not the 31 MB Canonbound file";
+
+function tokens(s){ return (s.toLowerCase().match(/[a-z0-9']+/g) || []).filter(w => w.length > 2 && !STOP.has(w)); }
+const STOP = new Set("the and that for with you this was are but not from have unto thee thou thy thine shall shall into upon them they his him her was were all who what when your into about".split(" "));
+
+function search(q){
+  const raw = q.trim();
+  const refHit = VERSES.find(([r]) => r.toLowerCase() === raw.toLowerCase());
+  if (refHit) return [{ref:refHit[0], text:refHit[1], why:"exact reference"}];
+  const t = tokens(raw);
+  const topicKey = Object.keys(TOPICS).find(k => raw.toLowerCase().includes(k));
+  const hits = [];
+  if (topicKey) TOPICS[topicKey].forEach(r => hits.push({ref:r, text:byRef[r], why:"topic · " + topicKey}));
+  VERSES.forEach(([ref, text]) => {
+    const bag = new Set(tokens(ref + " " + text));
+    let n = 0;
+    t.forEach(w => { if (bag.has(w) || text.toLowerCase().includes(w)) n++; });
+    if (n) hits.push({ref, text, why:n + " word overlap", n});
+  });
+  const seen = new Set();
+  return hits.filter(h => seen.has(h.ref) ? false : (seen.add(h.ref), true)).sort((a,b)=>(b.n||1)-(a.n||1)).slice(0,4);
+}
+
+let timer = null;
+function show(q, hits){
+  const out = document.getElementById("out");
+  clearInterval(timer);
+  if (!hits.length){
+    const url = "portal.html#q=" + encodeURIComponent(q);
+    out.innerHTML = `<div class="card"><div class="tag warn">GAP · no canon source</div><p>Nothing in this lane matches. TRU will not invent a verse. The portal is the next static page. It answers only if a built pack contains the source.</p><div class="actions"><button id="go">Open portal now</button><button id="stay">Stay</button><span class="src" id="count">Opening in 4s</span></div></div>`;
+    document.getElementById("go").onclick = () => location.href = url;
+    let left = 4;
+    document.getElementById("stay").onclick = () => { clearInterval(timer); document.getElementById("count").textContent = "Stayed. Gap left open."; };
+    timer = setInterval(() => {
+      left--;
+      const el = document.getElementById("count");
+      if (!el) return clearInterval(timer);
+      if (left <= 0) location.href = url;
+      else el.textContent = "Opening in " + left + "s";
+    }, 1000);
+    return;
+  }
+  out.innerHTML = hits.map(h => `<div class="card"><div class="tag">${h.ref}</div><p>${h.text}</p><div class="src">SOURCE · KJV · ${h.why} · offline canon lane</div></div>`).join("") + `<p class="src">Still thin? <a href="portal.html#q=${encodeURIComponent(q)}">Open the portal with this question</a></p>`;
+}
+document.getElementById("ask").onsubmit = (e) => {
+  e.preventDefault();
+  const q = document.getElementById("q").value.trim();
+  if (!q) return;
+  show(q, search(q));
+};
+</script>
+</body>
+</html>
