@@ -42,6 +42,13 @@
   </form>
   <div id="out"></div>
   <div class="drop" id="drop">Drop a .txt, .md, or .json manual here. It stays in this browser. Nothing is uploaded.</div>
+  <div class="card">
+    <div class="tag">Paste a page you already opened</div>
+    <p class="src">Copy the listing or article from the open tab. Paste it here. The portal quotes it later. It does not fetch the site.</p>
+    <input id="pname" placeholder="Pack name, e.g. 2026-10-04 chair" style="margin-top:8px">
+    <textarea id="pbody" rows="6" placeholder="Paste the visible text. Headline, price, body." style="margin-top:8px"></textarea>
+    <div class="actions"><button id="paste" type="button">Keep this text</button></div>
+  </div>
   <div class="actions">
     <button id="export" type="button">Bake a portable HTML</button>
     <button id="clear" type="button">Clear local packs</button>
@@ -162,6 +169,16 @@ drop.onclick = () => {
   input.click();
 };
 document.getElementById("clear").onclick = async () => { await clearChunks(); await refreshMeta(); };
+document.getElementById("paste").onclick = async () => {
+  const name = (document.getElementById("pname").value || "pasted").trim();
+  const text = document.getElementById("pbody").value.trim();
+  if (text.length < 20) { document.getElementById("out").innerHTML = `<div class="card"><div class="tag warn">Too thin</div><p>Paste the listing text, not just the title.</p></div>`; return; }
+  const rows = chunkText(name, text);
+  await putChunks(rows);
+  document.getElementById("pbody").value = "";
+  await refreshMeta();
+  document.getElementById("out").innerHTML = `<div class="card"><div class="tag">Kept</div><p>${rows.length} chunk from ${name}. Ask about a word that is in the paste.</p></div>`;
+};
 document.getElementById("export").onclick = async () => {
   const local = await allChunks();
   const packed = local.map(({title, body}) => ({title, body}));
