@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Breakout — TRU Arcade</title>
+<style>
+body{background:#0a0502;color:#eee;font:14px/1.4 monospace;display:flex;flex-direction:column;align-items:center;min-height:100dvh;margin:0;padding:10px}
+canvas{border:2px solid #a86;margin-top:6px;background:#080401}
+h1{font-size:15px;letter-spacing:.3em}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>BREAKOUT</h1>
+<canvas id="c" width="560" height="420"></canvas>
+<p>mouse or ←/→ · break every brick</p>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+const COLS=10,ROWS=6,BW=52,BH=18,GAP=4;
+const RC=["#e55","#e85","#eb5","#dd5","#5d5","#55d"];
+let pad,ball,bricks,score,lives,over,paused,win,mouseX=null,keys={};
+function init(){
+ pad={x:250,w:90};ball={x:280,y:300,vx:3.4,vy:-4};
+ bricks=[];
+ for(let r=0;r<ROWS;r++)for(let cc=0;cc<COLS;cc++)
+  bricks.push({x:6+cc*(BW+GAP),y:40+r*(BH+GAP),r,alive:true});
+ score=0;lives=3;over=false;win=false;paused=true;document.title="breakout";
+}
+init();
+addEventListener("keydown",e=>{keys[e.key]=true;if(e.key.startsWith("Arrow"))e.preventDefault();if(paused&&!over)paused=false;if(over)init()});
+addEventListener("keyup",e=>keys[e.key]=false);
+c.onmousemove=e=>{const b=c.getBoundingClientRect();mouseX=(e.clientX-b.left)*(560/b.width);if(paused&&!over)paused=false};
+c.onclick=()=>{if(over||win)init();else paused=false};
+let last=0;
+function loop(t){
+ const dt=Math.min(40,t-last);last=t;
+ if(!paused&&!over&&!win){
+  if(keys.ArrowLeft)pad.x-=7;if(keys.ArrowRight)pad.x+=7;
+  if(mouseX!==null)pad.x=mouseX-pad.w/2;
+  pad.x=Math.max(0,Math.min(560-pad.w,pad.x));
+  const steps=2;
+  for(let s=0;s<steps;s++){
+   ball.x+=ball.vx*dt/16/steps;ball.y+=ball.vy*dt/16/steps;
+   if(ball.x<7||ball.x>553)ball.vx*=-1;
+   if(ball.y<7)ball.vy=Math.abs(ball.vy);
+   if(ball.y>406){
+    lives--;document.title="breakout — "+lives+" left";
+    if(lives<=0){over=true;document.title="breakout — game over"}
+    else ball={x:280,y:300,vx:3.4,vy:-4};
+    break;
+   }
+   if(ball.y>388&&ball.y<400&&ball.x>pad.x-6&&ball.x<pad.x+pad.w+6&&ball.vy>0){
+    ball.vy=-Math.abs(ball.vy);ball.vx+=(ball.x-(pad.x+pad.w/2))*.06;
+    ball.vx=Math.max(-6,Math.min(6,ball.vx));
+   }
+   for(const b of bricks){
+    if(!b.alive)continue;
+    if(ball.x>b.x-6&&ball.x<b.x+BW+6&&ball.y>b.y-6&&ball.y<b.y+BH+6){
+     b.alive=false;score+=10;ball.vy*=-1;
+     if(bricks.every(k=>!k.alive)){win=true;document.title="breakout — you win!"}
+     break;
+    }
+   }
+  }
+ }
+ x.fillStyle="#080401";x.fillRect(0,0,560,420);
+ bricks.forEach(b=>{
+  if(!b.alive)return;
+  x.fillStyle=RC[b.r];x.fillRect(b.x,b.y,BW,BH);
+ });
+ x.fillStyle="#fb5";x.fillRect(pad.x,390,pad.w,10);
+ x.fillStyle="#fff";x.beginPath();x.arc(ball.x,ball.y,6,0,7);x.fill();
+ x.fillStyle="#ccc";x.font="13px monospace";x.fillText("score "+score+"  lives "+lives,8,18);
+ if(paused&&!over&&!win){x.fillStyle="#999";x.fillText("click to start",245,220)}
+ if(over){x.fillStyle="#fff";x.font="26px monospace";x.fillText("GAME OVER",205,210);x.font="13px monospace";x.fillText("click to retry",240,240)}
+ if(win){x.fillStyle="#fff";x.font="26px monospace";x.fillText("YOU WIN!",225,210);x.font="13px monospace";x.fillText("click to play again",232,240)}
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>

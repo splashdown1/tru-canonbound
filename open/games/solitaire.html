@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klondike Solitaire — TRU Arcade</title>
+<style>
+:root{--bg:#0a2d1a;--fg:#e8ffe8;--gold:#ffd484}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none}
+body{background:radial-gradient(ellipse at 50% 0%,#0f4d2a,var(--bg) 70%);color:var(--fg);font:14px/1.4 system-ui,sans-serif;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:12px}
+h1{font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:6px}
+#board{display:grid;grid-template-columns:repeat(7,72px);gap:8px;margin-top:8px}
+.pile{width:72px;height:96px;border:1px dashed rgba(255,255,255,.25);border-radius:8px;position:relative}
+.card{position:absolute;width:72px;height:96px;border-radius:8px;background:#fff;color:#111;font-size:17px;font-weight:700;padding:6px;box-shadow:0 2px 5px rgba(0,0,0,.5);cursor:pointer}
+.card.red{color:#c0392b}
+.card.face{background:linear-gradient(135deg,#1a5fa8,#0d3b73);color:transparent}
+.card.sel{outline:3px solid var(--gold)}
+button{background:#1a5fa8;color:#fff;border:0;border-radius:6px;padding:8px 16px;font:inherit;cursor:pointer;margin:6px}
+#msg{min-height:20px;color:var(--gold)}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>Klondike Solitaire</h1>
+<div id="msg"></div>
+<div id="board"></div>
+<button onclick="location.reload()">New Game</button>
+<script>
+const SUITS=["♠","♥","♦","♣"],RED=new Set(["♥","♦"]),RANK=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+let deck=[];for(let s of SUITS)for(let r=0;r<13;r++)deck.push({s,r});
+deck.sort(()=>Math.random()-.5);
+let tableau=[[],[],[],[],[],[],[]],foundation=[[],[],[],[]],stock=[],waste=[],selected=null;
+for(let i=0;i<24;i++)stock.push(deck.pop());
+for(let c=0;c<7;c++)for(let r=0;r<=c;r++)tableau[c].push({...deck.pop(),face:r===c});
+const el=id=>document.getElementById(id);
+function rank(v){return RANK[v]}
+function render(){
+ const b=el("board");b.innerHTML="";
+ const spots=[["stock"],["waste"],["f0"],["f1"],["f2"],["f3"]];
+ spots.forEach(x=>{const d=document.createElement("div");d.className="pile";d.id=x[0];b.appendChild(d)});
+ for(let c=0;c<7;c++){const d=document.createElement("div");d.className="pile";d.id="t"+c;d.style.height="auto";d.style.minHeight="96px";b.appendChild(d)}
+ function card(c,pile,idx,off){
+  const e=document.createElement("div");e.className="card"+(RED.has(c.s)?" red":"")+(c.face?"":" face")+(selected&&selected.p===pile&&selected.i===idx?" sel":"");
+  e.style.top=(off*22)+"px";e.textContent=c.face?rank(c.r)+" "+c.s:"";
+  e.onclick=()=>pick(pile,idx);
+  document.getElementById(pile).appendChild(e);
+ }
+ if(stock.length){const e=document.createElement("div");e.className="card face";e.onclick=draw;document.getElementById("stock").appendChild(e)}
+ else{const e=document.createElement("div");e.className="card";e.textContent="↺";e.onclick=draw;document.getElementById("stock").appendChild(e)}
+ waste.forEach((c,i)=>card(c,"waste",i,i));
+ foundation.forEach((f,i)=>{if(f.length)card(f.at(-1),"f"+i,f.length-1,0)});
+ tableau.forEach((t,c)=>t.forEach((cd,i)=>card(cd,"t"+c,i,i)));
+ el("msg").textContent=foundation.every(f=>f.length===13)?"You won! ♠♥♦♣":"";
+}
+function pick(pile,idx){
+ if(pile==="stock"){draw();return}
+ if(pile==="waste"&&idx!==waste.length-1)return;
+ const src=pile.startsWith("t")?tableau[+pile[1]]:pile==="waste"?waste:foundation[+pile[1]];
+ const c=src[idx];
+ if(!c||!c.face){if(pile.startsWith("t")&&idx===src.length-1)src[idx].face=true;render();return}
+ if(selected){tryMove(pile,idx)}else{selected={p:pile,i:idx};render()}
+}
+function draw(){
+ if(stock.length){const c=stock.pop();waste.push({...c,face:true})}
+ else{stock=waste.reverse().map(c=>({...c,face:false}));waste=[]}
+ selected=null;render();
+}
+function tryMove(pile,idx){
+ const sp=selected.p,si=selected.i;
+ let src=sp.startsWith("t")?tableau[+sp[1]]:sp==="waste"?waste:foundation[+sp[1]];
+ let card=src[si],rest=src.slice(si);
+ let dst,tgt=null;
+ if(pile.startsWith("f")){dst=foundation[+pile[1]];tgt=dst.length?dst.at(-1):null;
+   if(rest.length!==1)return bad();
+   if(card.s!==["♠","♥","♦","♣"][+pile[1]])return bad();
+   if(tgt?tgt.r!==card.r-1:card.r!==0)return bad();
+   foundation[+pile[1]].push(card);src.splice(si,1);
+ }else if(pile.startsWith("t")){dst=tableau[+pile[1]];tgt=dst.length?dst.at(-1):null;
+   if(tgt&&!tgt.face)return bad();
+   if(tgt?(RED.has(tgt.s)!==RED.has(card.s)&&tgt.r===card.r+1):card.r===12)dst.push(...rest),src.splice(si);
+   else return bad();
+ }else return bad();
+ if(sp.startsWith("t")){const t=tableau[+sp[1]];if(t.length&&!t.at(-1).face)t.at(-1).face=true}
+ selected=null;render();
+}
+function bad(){selected=null;render()}
+render();
+</script></body></html>

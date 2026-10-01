@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="TRU — a fully offline, deterministic, single-file Bible word-study engine. 31,100 KJV verses, 14,088 Strong's entries, 5,742 topical entries, 521 doctrinal phrases.">
+<title>TRU — offline Bible word-study engine</title>
+<style>
+:root{--cyan:#00e5ff;--bg:#000308;--fg:#e6f7ff;--dim:#9ed7ff;--faint:#557788;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--fg);font-family:ui-monospace,'Cascadia Mono','Courier New',monospace;line-height:1.65;padding:0 18px 80px;}
+a{color:var(--cyan);}
+.wrap{max-width:880px;margin:0 auto;}
+header{padding:56px 0 8px;text-align:center;}
+h1{font-size:clamp(40px,9vw,72px);letter-spacing:14px;color:var(--cyan);text-shadow:0 0 24px rgba(0,229,255,.45);font-weight:700;}
+.sub{color:var(--faint);letter-spacing:3px;font-size:12px;text-transform:uppercase;margin-top:6px;}
+.core{width:16px;height:16px;border-radius:50%;margin:26px auto 0;background:radial-gradient(circle,var(--cyan) 0%,rgba(0,229,255,.2) 70%,transparent 100%);box-shadow:0 0 26px var(--cyan);animation:breathe 4s ease-in-out infinite;}
+@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+.stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:34px 0 8px;}
+.stat{border:1px solid rgba(0,229,255,.25);background:rgba(0,229,255,.06);border-radius:12px;padding:10px 16px;text-align:center;min-width:130px;}
+.stat b{display:block;font-size:20px;color:var(--cyan);text-shadow:0 0 10px rgba(0,229,255,.4);}
+.stat span{font-size:10px;letter-spacing:1.5px;color:var(--faint);text-transform:uppercase;}
+.cta{display:block;text-align:center;margin:36px auto 10px;background:var(--cyan);color:#001018;font-weight:700;font-size:16px;letter-spacing:2px;border:none;border-radius:999px;padding:16px 34px;cursor:pointer;text-decoration:none;box-shadow:0 0 30px rgba(0,229,255,.35);transition:transform .15s;}
+.cta:hover{transform:scale(1.03);}
+.cta:active{transform:scale(.97);}
+.foot-note{text-align:center;color:var(--faint);font-size:11px;letter-spacing:1px;}
+section{margin-top:56px;}
+h2{color:var(--cyan);font-size:13px;letter-spacing:4px;text-transform:uppercase;border-bottom:1px solid rgba(0,229,255,.2);padding-bottom:8px;margin-bottom:18px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.card{border:1px solid rgba(0,229,255,.2);background:rgba(0,150,200,.05);border-radius:14px;padding:16px 18px;}
+.card h3{color:var(--cyan);font-size:14px;margin-bottom:6px;letter-spacing:1px;}
+.card p{font-size:13.5px;color:var(--dim);}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
+.shots img{width:100%;border:1px solid rgba(0,229,255,.25);border-radius:12px;}
+.cap{font-size:10.5px;color:var(--faint);letter-spacing:1px;margin-top:6px;text-align:center;}
+.rules li{margin:8px 0 8px 18px;font-size:14px;color:var(--dim);}
+.rules b{color:var(--fg);}
+code{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);border-radius:6px;padding:1px 7px;font-size:12.5px;color:var(--cyan);word-break:break-all;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+td{border-top:1px solid rgba(0,229,255,.12);padding:7px 8px;color:var(--dim);}
+td:first-child{color:var(--fg);white-space:nowrap;}
+footer{margin-top:70px;text-align:center;color:var(--faint);font-size:11px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>TRU</h1>
+  <div class="sub">offline &bull; local &bull; deterministic &bull; inspectable</div>
+  <div class="core"></div>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>31,100</b><span>KJV verses</span></div>
+  <div class="stat"><b>13,483</b><span>Bible words</span></div>
+  <div class="stat"><b>14,088</b><span>Strong's entries</span></div>
+  <div class="stat"><b>5,742</b><span>Topical topics</span></div>
+  <div class="stat"><b>521</b><span>Doctrinal phrases</span></div>
+</div>
+
+<a class="cta" href="TRU.html" download="TRU.html">&#8595; DOWNLOAD TRU (22 MB, ONE FILE)</a>
+<p class="foot-note">save the file &middot; open it in any browser &middot; no install, no network, no account</p>
+
+<section>
+  <h2>What it is</h2>
+  <p style="color:var(--dim);font-size:15px">TRU is a single HTML file that is an entire Bible word-study engine. The KJV, a Strong's-number lexicon, cross-references, two topical textbooks and a doctrinal phrase map are embedded inside it. Open the file anywhere &mdash; phone, laptop, airplane &mdash; and it runs. It makes no network calls. Every answer traces back to an embedded source, and when a source is silent, TRU says so with a clean <span style="color:#ff5252">GAP</span> rather than inventing content.</p>
+</section>
+
+<section>
+  <h2>How answers are grounded</h2>
+  <div class="grid">
+    <div class="card"><h3>Single words &rarr; LOGOS Lexicon</h3><p>Every Greek/Hebrew entry with lemma, transliteration, definition, KJV usage counts, root and part of speech. Scored routing picks the right entry; "grace" lands on &chi;&alpha;&rho;&#953;&sigmaf; G5485, not look-alikes.</p></div>
+    <div class="card"><h3>Doctrinal phrases &rarr; Strong's pairs</h3><p>521 curated and auto-mined phrases: "eternal life" &rarr; G2222 + G166; "faith without works" &rarr; G4102 + G2041. Every Strong's ID is verified present in the lexicon.</p></div>
+    <div class="card"><h3>Topics &rarr; Nave's + Torrey's</h3><p>Nave's Topical Bible (1897) and Torrey's Topical Textbook, audited build with zero unresolved scripture references. "access to God" &rarr; Torrey's verse groups.</p></div>
+    <div class="card"><h3>Phrases &rarr; KJV text</h3><p>Exact multi-word search across all 31,100 verses, with in-order token matching as fallback. "judge not that ye be judged" &rarr; Matthew 7:1, quoted verbatim.</p></div>
+    <div class="card"><h3>Verses &rarr; KJV + TSK</h3><p>Any "book chapter:verse" reference returns the KJV text with Treasury of Scripture Knowledge cross-references, plus a built-in speech reader that reads the Bible aloud.</p></div>
+    <div class="card"><h3>Local memory</h3><p>Teach it facts with <code style="color:var(--cyan)">remember: &hellip;</code> and recall them later with <code style="color:var(--cyan)">recall: &hellip;</code>. Memory stays in your browser, offline.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Inside the file</h2>
+  <div class="shots">
+    <div><img src="card-compound.png" alt="Doctrinal phrase study card"><div class="cap">PHRASE STUDY &mdash; "eternal life" &rarr; G2222 + G166</div></div>
+    <div><img src="card-lexicon.png" alt="Lexicon definition card"><div class="cap">LEXICON &mdash; Hebrew entry with KJV usage counts</div></div>
+  </div>
+  <div class="shots" style="margin-top:14px">
+    <div><img src="card-topical2.png" alt="Topical entry card"><div class="cap">TOPICAL &mdash; Torrey's "Access to God"</div></div>
+    <div><img src="tru-cards.png" alt="Scripture phrase search"><div class="cap">SCRIPTURE &mdash; KJV phrase search</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>The honesty rules</h2>
+  <ul class="rules">
+    <li><b>No invention.</b> Every claim is quoted or cited from an embedded source. No network, no AI generation.</li>
+    <li><b>GAP is an answer.</b> Non-biblical words ("indifference", "insomniac") return a clean gap &mdash; the UI states exactly what lookups are and are not supported.</li>
+    <li><b>Deterministic.</b> The same question always returns the same answer. Routing is inspectable in the file's source.</li>
+    <li><b>Scope, stated.</b> This is a word-study and verse-reference companion, not a doctrinal authority. It assembles what the sources say; it does not interpret them.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Sources &amp; licence</h2>
+  <table>
+    <tr><td>King James Version (1769)</td><td>public domain</td></tr>
+    <tr><td>Strong's Exhaustive Concordance numbering + LOGOS Lexicon companion</td><td>public domain data</td></tr>
+    <tr><td>Nave's Topical Bible (1897) &amp; Torrey's Topical Textbook (1897)</td><td>public domain; audited reference build</td></tr>
+    <tr><td>Treasury of Scripture Knowledge cross-references</td><td>public domain</td></tr>
+    <tr><td>TRU engine, routing, phrase map &amp; this page</td><td>built by the TRU project &mdash; use freely, study honestly</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Verification</h2>
+  <table>
+    <tr><td>Artifact</td><td>TRU.html &mdash; 22,836,273 bytes, one self-contained file</td></tr>
+    <tr><td>SHA-256</td><td><code id="sha">d727babe37456ba0520b0b3363db1520966034cd7a46470f105d922b9e9c1846</code></td></tr>
+    <tr><td>Test suite</td><td>17 browser cases &mdash; offline mode, clean console</td></tr>
+    <tr><td>Data integrity</td><td>14,088/14,088 Strong's entries verified against source; all 66 books, Genesis 1:1 &rarr; Revelation 22:21</td></tr>
+  </table>
+</section>
+
+<footer>TRU &bull; a local scripture work &bull; soli scripturae</footer>
+</div>
+</body>
+</html>

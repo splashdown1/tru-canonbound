@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bill Of Rights — TRU Book Reader</title>
+<style>
+:root{--bg:#0a0703;--fg:#fff3dc;--muted:#c9b088;--subtle:#8a7355;--accent:#ffd484;--line:rgba(255,205,120,.22)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse 70% 80% at 30% 20%,rgba(122,86,24,.18),transparent 70%),var(--bg);color:var(--fg);font:15px/1.75 Georgia,'Times New Roman',serif;min-height:100dvh}
+.wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+h1{color:var(--accent);font-size:24px;letter-spacing:.08em;text-align:center;margin-bottom:4px}
+.eyebrow{color:var(--subtle);text-align:center;font:600 10px/1.4 ui-monospace,monospace;letter-spacing:.24em;text-transform:uppercase;margin-bottom:22px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.controls button{background:rgba(255,205,120,.1);color:var(--accent);border:1px solid rgba(255,205,120,.4);border-radius:20px;padding:9px 18px;font:700 12px/1 ui-monospace,monospace;letter-spacing:.08em;cursor:pointer}
+.controls button:hover{background:rgba(255,205,120,.22)}
+select{background:#171006;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:600 12px/1 ui-monospace,monospace;max-width:340px}
+.pos{color:var(--muted);text-align:center;font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.1em;margin-bottom:18px}
+#text{white-space:pre-wrap;color:var(--fg);font-size:17px;line-height:1.9;border:1px solid var(--line);border-radius:14px;background:rgba(20,13,4,.6);padding:26px 28px;min-height:200px}
+.chat{margin-top:22px;border:1px solid var(--line);border-radius:12px;background:rgba(16,10,3,.7);overflow:hidden}
+.chatlog{max-height:150px;overflow:auto;padding:10px 14px;font:12px/1.6 ui-monospace,monospace;color:var(--muted)}
+.chatlog .you{color:var(--accent)}
+.chatbar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.chatbar input{flex:1;background:#171006;color:var(--fg);border:1px solid var(--line);border-radius:18px;padding:9px 14px;outline:none;font:13px/1.4 ui-monospace,monospace}
+.chatbar button{background:var(--accent);color:#241703;border:0;border-radius:18px;padding:9px 16px;font:700 12px/1 ui-monospace,monospace;cursor:pointer;letter-spacing:.06em}
+.hint{color:var(--subtle);text-align:center;font:10px/1.6 ui-monospace,monospace;letter-spacing:.08em;margin-top:14px}
+</style>
+</head>
+<body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<div class="wrap">
+  <h1>Bill Of Rights</h1>
+  <div class="eyebrow">TRU BOOK READER · OFFLINE · READS ALOUD</div>
+  <div class="controls">
+    <button id="play">▶ PLAY</button>
+    <button id="pause">⏸ PAUSE</button>
+    <button id="stop">⏹ STOP</button>
+    <button id="cover">⏮ START</button>
+    <select id="chap" aria-label="Chapter"></select>
+  </div>
+  <div class="pos" id="pos">…</div>
+  <div id="text"></div>
+  <div class="chat">
+    <div class="chatlog" id="clog"></div>
+    <div class="chatbar">
+      <input id="cin" placeholder="stop · pause · resume · next · back · find humility · where" aria-label="Reader chat">
+      <button id="csend">SEND</button>
+    </div>
+  </div>
+  <div class="hint">say “stop” here or press the button — the book keeps your place. Opened from TRU? this page registered itself into TRU’s LIBRARY.</div>
+</div>
+<script>
+const DATA_B64="H4sIAJYbnGoC/3VWW8/UNhD9K9Y+L1RUqlr6PVFaISoVKqClUrdCE2ey8YdjB192WVD/e8+Mk72g8vBdEo/HZ86cM87nTXHF8+ZHs/nJeW9eDuaV248lb7Zmk33dy0qHlXdxeJfOK4kH3RLj+/zN7fLDsUxeYuxIc+H0NqZeYp+2x6uVjNd/b3ZhF96MbP4IrnBvXhcqnI2CiSuYh2vQGw7mJc5xgbx5MnHo8VOyKdEULD+NIaOeWlwMsrt8mXcXfqec8didJHifOGfzmoFm6jiZb7/bmkff//B4F15RcYND4M9s29ojXXv8SKA8l1/n/XkkgJ3oPZsQjaejweuZbXFhbygYzoU67/IoWAVWYo8SYtjuQkxmTnF0ndNoATwkZsMfOVmXWd4kjsOdQSR1yfX767g+TpIQp7EdW7ql7FmgbWWXPGlrzkscZy9/yDKAnYQ9YWXqPCMHhV7ezAwmhUfZ8iweOAXFPwgQlNBr7Ui5T44PFCy3Nj1Xcp6YI3v/IPG+ehL+J+eRjramYykggNacKZ3W1mW2NblykozUONCWAdDXCsDO98yzEcAdE2ClCSW3doRY8NK4MCScx/2CDeBeRJOj7x16qqFbBJniJpb0Sops/FApQaNAjlUKJzPGmgXN0RX8WxSIhd6WnspjPAZOWyNduEp5pIRtHbZIJugkIErAd61LNrmuKRLSaTD/XPX+lbK7hS/Wc0Z2UBH8BDTbhhN/Z5JXSz95GKBHvKU9OXjE1JCYsAH9l1yU7AjXSWhm9wmZvyTy4KI2ckkIob+llEjM1+JczpXRXtRZZ8gGsu40uyUhzuQ6zzGVVmmkMqpaaRhcmkiEttXjZ9DuLESTIMy+sbMqfvbSnLV+xbziafwoBU3z2JPPoe7TIgAl9kVcQhfkCBnZq+gp5COa0zRuaXaFvJooig+PYkgoiiZwbIBsEkHU4NUJ0lzpJwTRjC4q6J0tq+3JPEuC9deaTls43GLuSAMtZeE+uQzQu9BaCjEgFDkCHTDrgMhy8/Oy/ttqqOOIoSjSsqUiMnM6OMstzyJBtEp2zhVjyJqeYIh0pzptDIi+F0qEr9rdQy1yZjNfJk0zcMgr/eWIM5BQC7iHMCn16l3vBpazvJu6u124nNGJXaYZU+HiKaFQR7lQsGQmA4cFYXTV6uimzH7YtmwI6XlO7oA0y3lb/MaILiflB8Kb28Nq1b6K06JdBhZsdoNMkkHa541aH6Z5UB0spEHD53z3Fai0mJBVuk1bOvieozLkPFeGpGJViUL7hE2ytsoV1A7ncB9PVzNaRLgLMtDBpxqinV+SEyl28tK4SW2C9PfQ0jofdF7qnt5lxNuCaSXXx6IYFexy7EgHGXOoEXVMroizoSRnx/Pmq0iMLwmFujEGaoYzKVtQhf6cJ1ezb+shPBLT1BokJwcqGCnNqToO1gXlQim8W7ZipA4pBpkTQrdGLYLgG0mghdihdUgrqs8RVKxtls7FTgDK8LgkABWjwzIdYrrcdZpF8eSM6uUyE4Q2Vihezae7elYLLN1e252rwxAkVcQEBykXyrumhHurzmlUVpLco/m09h4jgHvUccSEwLSLHmNvUcll8kvjhWNt9dlLOmnS4XogD5gAEt5aQl9suEywxA/4I03au9WIsSao5f8+mQQOyXSx+JDTSdwu7FQx9tY+XkpfyVF2fvkozXAiNXL+9kJJ/KE6uV/FiHwOHAAri8Bhm36xvE2VvcqrhpplyM01LN9T0tIBBinrFf/XendyqBMnFdc6M6+/D7fa4SbixrZcljcQ5XovOFs10jN4AhjYA+aj/cJoRiEXH1yuaQVzxjLHo4RK3p497/WTaCHy9sN3SXKDtLGwfie2k1xZ969toiSkNlHcrp2/Rw/sT+0rcVm/wrr559//AL7ItxkNDAAA";
+function b64Bytes(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+async function gunzipJson(b64){const stream=new Blob([b64Bytes(b64)]).stream().pipeThrough(new DecompressionStream("gzip"));return JSON.parse(await new Response(stream).text());}
+const TTS={state:"idle",
+  available(){return "speechSynthesis" in window;},
+  pick(){const vs=this.available()?speechSynthesis.getVoices():[];return vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith("en"))||vs[0]||null;},
+  stop(){this.state="idle";try{speechSynthesis.cancel();}catch(e){}ui();},
+  pause(){if(this.state!=="speaking")return;try{speechSynthesis.pause();this.state="paused";}catch(e){}ui();},
+  resume(){if(this.state!=="paused")return;try{speechSynthesis.resume();this.state="speaking";}catch(e){}ui();},
+  speak(text,onend){
+    if(!this.available()){clog("no speech engine in this browser");return;}
+    this.stop();
+    const chunks=[];let buf="";
+    for(const s of String(text).split(/(?<=[.;:!?»"])"+/)){if((buf+" "+s).length>230){if(buf.trim())chunks.push(buf.trim());buf=s;}else buf=(buf?buf+" ":"")+s;}
+    if(buf.trim())chunks.push(buf.trim());
+    const v=this.pick();this.state="speaking";ui();
+    let i=0;const next=()=>{if(this.state!=="speaking")return;
+      if(i>=chunks.length){this.state="idle";if(onend)try{onend();}catch(e){}ui();return;}
+      const u=new SpeechSynthesisUtterance(chunks[i++]);
+      if(v)u.voice=v;u.rate=.98;u.onend=next;u.onerror=next;
+      try{speechSynthesis.speak(u);}catch(e){this.state="idle";ui();}
+    };next();}
+};
+let BOOK=null,ci=0,playing=false;
+const KEY="tru-book-pos:"+"bill_of_rights";
+function save(){try{localStorage.setItem(KEY,JSON.stringify({i:ci}));}catch(e){}}
+function posLabel(){return "chapter "+(ci+1)+" of "+BOOK.chapters.length;}
+function ui(){document.getElementById("play").textContent=playing?"▶ PLAYING":"▶ PLAY";
+  document.getElementById("pos").textContent=(playing?("● READING · "):"")+posLabel();}
+function showChapter(){const t=document.getElementById("text");
+  t.textContent=BOOK.chapters[ci]||"";t.scrollTop=0;
+  const s=document.getElementById("chap");s.value=ci;ui();}
+function advance(){if(ci+1<BOOK.chapters.length)ci++;else{playing=false;TTS.stop();clog("— end of the book —");return false;}save();return true;}
+function play(){if(!TTS.available()){clog("no speech engine in this browser");return;}
+  playing=true;save();ui();
+  const step=()=>{if(!playing)return;
+    const ch=BOOK.chapters[ci]||"";showChapter();save();
+    const announce=BOOK.title+". "+(BOOK.chapterWord||"Chapter")+" "+(ci+1)+". "+ch;
+    TTS.speak(announce,()=>{if(!playing)return;if(advance())step();});
+  };step();}
+function stop(){playing=false;TTS.stop();save();clog("stopped at "+posLabel());}
+async function boot(){
+  BOOK=await gunzipJson(DATA_B64);
+  try{
+    const lib=JSON.parse(localStorage.getItem("tru-library")||"[]");
+    if(!lib.some(e=>e.ref===BOOK.ref))lib.push({ref:BOOK.ref,title:BOOK.title,slug:BOOK.slug});
+    localStorage.setItem("tru-library",JSON.stringify(lib));
+  }catch(e){}
+  try{const p=JSON.parse(localStorage.getItem(KEY)||"null");if(p&&p.i<BOOK.chapters.length)ci=p.i;}catch(e){}
+  const s=document.getElementById("chap");
+  s.innerHTML=BOOK.chapters.map((c,i)=>'<option value="'+i+'">'+"Chapter "+(i+1)+"</option>").join("");
+  s.onchange=()=>{ci=+s.value;save();showChapter();};
+  showChapter();
+}
+document.getElementById("play").onclick=()=>{if(TTS.state==="paused")TTS.resume();else play();};
+document.getElementById("pause").onclick=()=>TTS.pause();
+document.getElementById("stop").onclick=stop;
+document.getElementById("cover").onclick=()=>{ci=0;save();showChapter();play();};
+function clog(t,you){const el=document.getElementById("clog");
+  el.innerHTML+='<div class="'+(you?"you":"")+'">'+(you?"you: ":"TRU: ")+t.replace(/</g,"&lt;")+"</div>";el.scrollTop=el.scrollHeight;}
+function handle(raw){
+  const q=raw.trim();if(!q)return;
+  clog(q,true);const low=q.toLowerCase();
+  if(/\b(stop)\b/.test(low)&&low.length<12){stop();return;}
+  if(/\b(pause)\b/.test(low)&&low.length<12){TTS.pause();clog("paused");return;}
+  if(/\b(resume|play)\b/.test(low)&&low.length<12){if(TTS.state==="paused")TTS.resume();else play();return;}
+  if(/\bnext\b/.test(low)&&low.length<12){playing=false;TTS.stop();if(advance())play();return;}
+  if(/\b(back|previous)\b/.test(low)&&low.length<14){playing=false;TTS.stop();if(ci>0)ci--;save();showChapter();play();return;}
+  if(/\bwhere\b/.test(low)&&low.length<12){clog("you are at "+posLabel());return;}
+  const m=low.match(/^(?:find|search)\s+(.{2,})$/);
+  if(m){const needle=m[1];const idx=BOOK.chapters.findIndex(c=>c.toLowerCase().includes(needle));
+    if(idx<0){clog("not found in this book");return;}
+    playing=false;TTS.stop();ci=idx;save();showChapter();play();
+    clog('found “'+needle+'” in chapter '+(idx+1)+" — reading from there");return;}
+  clog('commands: stop · pause · resume · next · back · find <text> · where');
+}
+document.getElementById("csend").onclick=()=>{const i=document.getElementById("cin");handle(i.value);i.value="";};
+document.getElementById("cin").addEventListener("keydown",e=>{if(e.key==="Enter"){handle(e.target.value);e.target.value="";}});
+boot();
+</script>
+</body>
+</html>

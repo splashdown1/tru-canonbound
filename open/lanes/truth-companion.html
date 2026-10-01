@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="TRU — Holographic Sovereign. Fully offline local intelligence.">
+<title>TRU — Holographic Sovereign</title>
+<style>
+
+:root{--bg:#02060d;--bg-elev:#071018;--panel:rgba(3,12,23,.92);--fg:#dff8ff;--muted:#8fb4c0;--subtle:#5e7f8a;--accent:#00e5ff;--accent-fg:#00131b;--line:rgba(0,229,255,.22);--truth:#d8a657;--scripture:#b9a4ff;--reason:#00e5ff;--memory:#69f0ae;--gap:#ff6b7a;--display:"Rajdhani","Segoe UI",system-ui,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--mono);overflow:hidden}button:not(:disabled){cursor:pointer}
+.shell{position:relative;height:100dvh;overflow:hidden;background:radial-gradient(ellipse 70% 80% at 28% 50%,rgba(0,83,116,.22),transparent 68%),radial-gradient(ellipse 50% 70% at 76% 35%,rgba(0,40,70,.16),transparent 70%),var(--bg)}
+#field{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}#field:active{cursor:grabbing}
+.veil{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,229,255,.03) 0,rgba(0,229,255,.03) 1px,transparent 1px,transparent 4px),radial-gradient(ellipse at center,transparent 46%,rgba(0,0,0,.46) 100%)}
+.header{position:absolute;z-index:5;left:28px;top:22px;pointer-events:none}
+.title{color:var(--accent);font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.22em;text-shadow:0 0 18px rgba(0,229,255,.45);line-height:1.1}
+.sub{color:var(--muted);font-size:10px;letter-spacing:.16em;margin-top:7px;text-transform:uppercase}
+.counts{color:var(--subtle);font-size:10px;margin-top:8px}
+.toolbar{position:absolute;z-index:6;left:28px;top:118px;width:min(360px,calc(100vw - 56px));padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(2,11,21,.78);box-shadow:0 0 32px rgba(0,229,255,.08);backdrop-filter:blur(14px)}
+.input{width:100%;color:var(--fg);background:#03101b;border:1px solid rgba(0,229,255,.32);border-radius:6px;padding:10px 12px;outline:none;font:inherit;font-size:12px}
+.input:focus{border-color:var(--accent);box-shadow:0 0 16px rgba(0,229,255,.16)}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.chip,.tool{color:#a9eaff;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.24);border-radius:6px;padding:6px 8px;font-size:10px;letter-spacing:.08em}
+.chip:hover,.chip.active,.tool:hover{background:rgba(0,229,255,.16);border-color:var(--accent)}
+.actions{display:flex;gap:6px;margin-top:8px}.actions .tool{flex:1}
+.panel{position:absolute;z-index:10;right:26px;top:24px;width:min(460px,calc(100vw - 52px));max-height:calc(100dvh - 48px);overflow:auto;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 0 70px rgba(0,229,255,.12),0 20px 80px #000;backdrop-filter:blur(18px)}
+.panel h2{color:var(--accent);font-family:var(--display);font-size:18px;letter-spacing:.14em;margin-bottom:4px;font-weight:700}
+.panel h3{color:var(--truth);font-size:11px;letter-spacing:.14em;margin:18px 0 7px;text-transform:uppercase}
+.panel p,.panel pre{color:#c8e5ed;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.close{position:absolute;right:12px;top:10px;color:#7fa6b1;background:transparent;border:0;font-size:22px;width:36px;height:36px}
+.eyebrow{color:#7fa6b1;font-size:10px;letter-spacing:.08em;margin:6px 0 12px}
+.stategrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{padding:10px;border:1px solid rgba(0,229,255,.16);border-radius:9px;background:rgba(0,229,255,.045)}
+.stat b{display:block;color:#78eaff;font-size:10px;margin-bottom:5px;letter-spacing:.08em}
+.pathway{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid rgba(0,229,255,.11);color:#bfeaf3;font-size:10px}
+.pathway strong{color:var(--truth)}.pathway button{margin-left:auto;padding:4px 8px;font-size:9px;background:transparent;color:var(--accent);border:1px solid rgba(0,229,255,.25);border-radius:4px}
+.memory{max-height:128px;overflow:auto}.memory div{padding:5px 0;border-bottom:1px solid rgba(0,229,255,.08);font-size:10px;color:#9fc9d3}.memory b{color:#d7f6ff}
+.ask{position:absolute;z-index:6;left:50%;bottom:28px;transform:translateX(-50%);width:min(680px,calc(100vw - 56px));display:flex;gap:8px}
+.ask button{width:118px;min-height:44px;color:var(--accent-fg);background:var(--accent);border:0;border-radius:22px;font-weight:700;letter-spacing:.06em;box-shadow:0 0 24px rgba(0,229,255,.32);font-family:var(--display);font-size:14px}
+.ask button:disabled{opacity:.45;cursor:default}.ask .input{min-height:44px;border-radius:22px;padding:10px 16px}
+.status{position:absolute;z-index:5;left:28px;bottom:30px;color:#79ddec;font-size:10px;letter-spacing:.1em}
+.hint{position:absolute;z-index:5;right:28px;bottom:30px;color:rgba(146,191,201,.54);font-size:10px;text-align:right;line-height:1.5}
+.chat{position:absolute;z-index:5;right:28px;bottom:86px;width:min(460px,42vw);max-height:34vh;overflow:auto;padding:12px;border:1px solid rgba(0,229,255,.16);border-radius:12px;background:rgba(2,11,21,.58);backdrop-filter:blur(10px)}
+.msg{padding:8px 10px;margin:6px 0;border-left:2px solid var(--accent);background:rgba(0,229,255,.05);font-size:11px;line-height:1.5;white-space:pre-wrap}
+.msg.user{border-color:#6e9aac;background:rgba(73,137,164,.08)}
+.vd{font-size:9px;letter-spacing:.12em;color:var(--truth);margin-bottom:3px}
+.vd[data-v="SCRIPTURE"]{color:var(--scripture)}.vd[data-v="REASON"]{color:var(--reason)}.vd[data-v="MEMORY"]{color:var(--memory)}.vd[data-v="GAP"]{color:var(--gap)}.vd[data-v="TRUTH"]{color:var(--truth)}.vd[data-v="DEFINE"]{color:#9fd8b4}.vd[data-v="KNOWLEDGE"]{color:#8fc7d8}.vd[data-v="CALC"]{color:#ffd98a}
+..vd[data-v="COMFORT"]{color:#a8e6c8}.vd[data-v="WHY"]{color:#9fd8ff}.vd[data-v="XREF"]{color:#d8b8ff}.vd[data-v="UNKNOWN"]{color:#98a2b3}
+.ready{color:#9fc9d3;font-size:11px;line-height:1.6}.ready b{color:var(--accent);letter-spacing:.16em;font-family:var(--display)}
+.loading{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:#02060d;transition:opacity .45s ease}
+.loading.done{opacity:0;pointer-events:none}
+.loadcard{width:min(420px,calc(100vw - 48px));padding:28px;border:1px solid var(--line);border-radius:14px;background:rgba(3,12,23,.96);text-align:center;box-shadow:0 0 80px rgba(0,229,255,.18)}
+.loadcard h2{color:var(--accent);letter-spacing:.28em;font-size:16px;margin-bottom:12px;font-family:var(--display);font-weight:700}
+.loadtext{color:#7fa6b1;font-size:11px;margin-bottom:12px;min-height:1.4em}
+.bar{height:4px;background:#12313c;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7ec8ff,var(--accent));box-shadow:0 0 12px var(--accent);width:0;transition:width .12s linear}
+.used{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.used button{font-size:9px;color:#9ec4cf;border:1px solid rgba(0,229,255,.2);background:transparent;border-radius:999px;padding:3px 8px}
+@media(max-width:900px){.toolbar{top:96px;width:min(320px,calc(100vw - 36px));left:18px}.header{left:18px;top:16px}.title{font-size:16px;letter-spacing:.16em}.counts{display:none}.chat{left:18px;right:18px;bottom:88px;width:auto;max-height:22vh}.panel{right:18px;top:18px;width:calc(100vw - 36px)}.ask{width:calc(100vw - 36px);bottom:20px}.status{left:18px;bottom:68px}.hint{display:none}.stategrid{grid-template-columns:1fr}}
+
+
+.think-pulse{position:absolute;z-index:7;left:50%;top:42%;transform:translate(-50%,-50%);pointer-events:none;text-align:center}
+.think-pulse .ring{width:120px;height:120px;margin:0 auto 12px;border-radius:50%;border:2px solid rgba(0,229,255,.35);box-shadow:0 0 40px rgba(0,229,255,.25),inset 0 0 30px rgba(0,229,255,.08);animation:truPulse 1.2s ease-in-out infinite}
+.think-pulse .ring::after{content:"";display:block;width:70%;height:70%;margin:15% auto;border-radius:50%;border:1px solid rgba(0,229,255,.5);animation:truPulse 1.2s ease-in-out infinite .2s}
+.think-pulse .label{color:#7ec8ff;font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-shadow:0 0 12px rgba(0,229,255,.6)}
+.think-pulse .sub{color:#5e7f8a;font-size:10px;margin-top:6px;letter-spacing:.06em;max-width:320px}
+@keyframes truPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
+
+</style>
+<script src="assets/tru-session.js"></script><script src="assets/tru-comfort.js"></script><script src="assets/tru-claims.js"></script></head>
+<body>
+<div class="shell" id="app">
+  <canvas id="field" aria-label="Structural graph"></canvas>
+  <div class="veil"></div>
+  <header class="header">
+    <div class="title">TRU — HOLOGRAPHIC SOVEREIGN</div>
+    <div class="sub">A sovereign offline intelligence system.</div>
+    <div class="counts" id="counts">BOOTING STRUCTURAL GRAPH…</div>
+  </header>
+  <section class="toolbar">
+    <input class="input" id="search" placeholder="search nodes by key or meaning…" autocomplete="off" aria-label="Search nodes">
+    <div class="filters">
+      <button type="button" class="chip active" data-f="all">ALL</button>
+      <button type="button" class="chip" data-f="core">CORE</button>
+      <button type="button" class="chip" data-f="doctrine">DOCTRINE</button>
+      <button type="button" class="chip" data-f="knowledge">KNOWLEDGE</button>
+      <button type="button" class="chip" data-f="memory">MEMORY</button>
+    </div>
+    <div class="actions">
+      <button type="button" class="tool" id="reset">RESET VIEW</button>
+      <button type="button" class="tool" id="presence">TRU PRESENCE</button>
+      <button type="button" class="tool" id="voice">VOICE OFF</button>
+      <button type="button" class="tool" id="help">?</button>
+    </div>
+  </section>
+  <aside class="panel" id="panel" hidden role="dialog" aria-label="Detail"></aside>
+  <div class="chat" id="chat"></div>
+  <form class="ask" id="askForm">
+    <input class="input" id="askInput" placeholder="Ask TRU about Scripture or the local brain…" autocomplete="off" aria-label="Ask TRU" disabled>
+    <button type="submit" id="askBtn" disabled>ASK TRU</button>
+  </form>
+  <div class="status" id="status">● BOOTING · LOCAL ENGINE</div>
+  <div class="hint">drag orbit · scroll zoom · click nodes<br>click the large TRU core for presence · Shift+click two nodes for pathway</div>
+  <div class="think-pulse" id="thinkPulse" hidden><div class="ring"></div><div class="label" id="thinkLabel">THINKING</div><div class="sub" id="thinkSub"></div></div>
+  <div class="loading" id="loading" aria-busy="true">
+    <div class="loadcard">
+      <h2>TRU PRESENCE</h2>
+      <div class="loadtext">Preparing local graph…</div>
+      <div class="bar"><i style="width:4%"></i></div>
+    </div>
+  </div>
+</div>
+<script>
+
+const IDENTITY="TRU — Holographic Sovereign";
+const STATUS_LINE="A sovereign offline intelligence system.";
+const BOOK={"gen":"genesis","genesis":"genesis","exo":"exodus","exod":"exodus","exodus":"exodus","lev":"leviticus","leviticus":"leviticus","num":"numbers","numbers":"numbers","deu":"deuteronomy","deut":"deuteronomy","deuteronomy":"deuteronomy","jos":"joshua","josh":"joshua","joshua":"joshua","jdg":"judges","judg":"judges","judges":"judges","rut":"ruth","ruth":"ruth","1sa":"1 samuel","1sam":"1 samuel","1samuel":"1 samuel","1 samuel":"1 samuel","2sa":"2 samuel","2sam":"2 samuel","2samuel":"2 samuel","2 samuel":"2 samuel","1ki":"1 kings","1kgs":"1 kings","1kings":"1 kings","1 kings":"1 kings","2ki":"2 kings","2kgs":"2 kings","2kings":"2 kings","2 kings":"2 kings","1ch":"1 chronicles","1chr":"1 chronicles","1chronicles":"1 chronicles","1 chronicles":"1 chronicles","2ch":"2 chronicles","2chr":"2 chronicles","2chronicles":"2 chronicles","2 chronicles":"2 chronicles","ezr":"ezra","ezra":"ezra","neh":"nehemiah","nehemiah":"nehemiah","est":"esther","esther":"esther","job":"job","psa":"psalms","ps":"psalms","psalm":"psalms","psalms":"psalms","pro":"proverbs","prov":"proverbs","proverbs":"proverbs","ecc":"ecclesiastes","eccl":"ecclesiastes","ecclesiastes":"ecclesiastes","sng":"song of solomon","sos":"song of solomon","song":"song of solomon","song of solomon":"song of solomon","song of songs":"song of solomon","isa":"isaiah","isaiah":"isaiah","jer":"jeremiah","jeremiah":"jeremiah","lam":"lamentations","lamentations":"lamentations","eze":"ezekiel","ezek":"ezekiel","ezekiel":"ezekiel","dan":"daniel","daniel":"daniel","hos":"hosea","hosea":"hosea","joe":"joel","joel":"joel","amo":"amos","amos":"amos","oba":"obadiah","obadiah":"obadiah","jon":"jonah","jnh":"jonah","jonah":"jonah","mic":"micah","micah":"micah","nah":"nahum","nahum":"nahum","hab":"habakkuk","habakkuk":"habakkuk","zep":"zephaniah","zeph":"zephaniah","zephaniah":"zephaniah","hag":"haggai","haggai":"haggai","zec":"zechariah","zech":"zechariah","zechariah":"zechariah","mal":"malachi","malachi":"malachi","mat":"matthew","matt":"matthew","matthew":"matthew","mar":"mark","mk":"mark","mark":"mark","luk":"luke","luke":"luke","jhn":"john","jn":"john","john":"john","act":"acts","acts":"acts","rom":"romans","romans":"romans","1co":"1 corinthians","1cor":"1 corinthians","1corinthians":"1 corinthians","1 corinthians":"1 corinthians","2co":"2 corinthians","2cor":"2 corinthians","2corinthians":"2 corinthians","2 corinthians":"2 corinthians","gal":"galatians","galatians":"galatians","eph":"ephesians","ephesians":"ephesians","php":"philippians","phil":"philippians","philippians":"philippians","col":"colossians","colossians":"colossians","1th":"1 thessalonians","1thess":"1 thessalonians","1 thessalonians":"1 thessalonians","2th":"2 thessalonians","2thess":"2 thessalonians","2 thessalonians":"2 thessalonians","1ti":"1 timothy","1tim":"1 timothy","1 timothy":"1 timothy","2ti":"2 timothy","2tim":"2 timothy","2 timothy":"2 timothy","tit":"titus","titus":"titus","phm":"philemon","philemon":"philemon","heb":"hebrews","hebrews":"hebrews","jas":"james","jam":"james","james":"james","1pe":"1 peter","1pet":"1 peter","1 peter":"1 peter","2pe":"2 peter","2pet":"2 peter","2 peter":"2 peter","1jo":"1 john","1jn":"1 john","1 john":"1 john","2jo":"2 john","2jn":"2 john","2 john":"2 john","3jo":"3 john","3jn":"3 john","3 john":"3 john","jud":"jude","jude":"jude","rev":"revelation","revelation":"revelation"};
+const CORE_EDGES=[{source:"node-core-tru-presence",target:"node-tru-brain",relation:"contains"},{source:"node-core-tru-presence",target:"node-layer-scripture",relation:"grounds"},{source:"node-core-tru-presence",target:"node-layer-memory",relation:"retains"},{source:"node-core-tru-presence",target:"node-layer-reasoning",relation:"reasons"},{source:"node-core-tru-presence",target:"node-layer-brain",relation:"searches"},{source:"node-layer-brain",target:"node-layer-scripture",relation:"cross-checks"},{source:"node-layer-memory",target:"node-layer-reasoning",relation:"informs"},{source:"node-tru-brain",target:"node-layer-scripture",relation:"cross-checks"},{source:"node-tru-brain",target:"node-layer-reasoning",relation:"supports"},{source:"node-layer-brain",target:"node-tru-brain",relation:"indexes"}];
+const CORE_KEYS=["node-core-tru-presence","node-tru-brain","node-layer-scripture","node-layer-memory","node-layer-reasoning","node-layer-brain"];
+const CORE_SET=new Set(CORE_KEYS);
+const CORE_SCALE={
+  "node-core-tru-presence":2.6,
+  "node-tru-brain":2.15,
+  "node-layer-scripture":1.68,
+  "node-layer-memory":1.68,
+  "node-layer-reasoning":1.68,
+  "node-layer-brain":1.68
+};
+function fmtCalc(v){if(Math.abs(v-Math.round(v))<1e-9)return Math.round(v).toLocaleString("en-US");if(Math.abs(v)>=1e21)return v.toExponential(4);if(v!==0&&Math.abs(v)<1e-6)return v.toExponential(4);return String(Number(v.toFixed(6)));}
+function calcExpr(s){
+  const toks=s.match(/\d+(?:\.\d+)?|[+\-*/()]/g);let i=0;
+  function peek(){return toks[i];}
+  function next(){return toks[i++];}
+  function term(){let v=unary();while(peek()==="*"||peek()==="/"){const op=next();const r=unary();v=op==="*"?v*r:v/r;}return v;}
+  function expr(){let v=term();while(peek()==="+"||peek()==="-"){const op=next();const r=term();v=op==="+"?v+r:v-r;}return v;}
+  function unary(){if(peek()==="-"){next();return -unary();}if(peek()==="+"){next();return unary();}if(peek()==="("){next();const v=expr();if(next()!==")")throw new Error("paren");return v;}const t=next();if(t===undefined||!/^[\d.]/.test(t))throw new Error("token");const n=Number(t);if(!isFinite(n))throw new Error("num");return n;}
+  const v=expr();if(i!==toks.length)throw new Error("trailing tokens");return v;}
+function truArithmeticPre(q){try{const s=String(q).toLowerCase().replace(/[?!.]+$/g," ").trim();let t=" "+s+" ";t=t.replace(/(\d+(?:\.\d+)?)\s+to\s+the\s+power\s+of\s+(\d+(?:\.\d+)?)/g,"Math.pow($1,$2)");t=t.replace(/(\d+(?:\.\d+)?)\s+(times|multiplied\s+by)\s+(\d+(?:\.\d+)?)/g,"($1*$3)");t=t.replace(/(\d+(?:\.\d+)?)\s+divided\s+by\s+(\d+(?:\.\d+)?)/g,"($1/$2)");t=t.replace(/(\d+(?:\.\d+)?)\s+plus\s+(\d+(?:\.\d+)?)/g,"($1+$2)");t=t.replace(/(\d+(?:\.\d+)?)\s+minus\s+(\d+(?:\.\d+)?)/g,"($1-$2)");const sr=t.match(/square\s+root\s+of\s+(\d+(?:\.\d+)?)/);if(sr){const v=Math.sqrt(Number(sr[1]));if(isFinite(v))return{reply:"CALC — square root of "+sr[1]+" = "+fmtCalc(v),verdict:"CALC",scriptureRef:null,relatedVerses:[],nodesUsed:[{k:"node-tru-brain",w:1,v:"local arithmetic",t:"core"}],followUp:false};}const expr=t.replace(/Math\.pow\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)/g,function(_,b,e){return String(Math.pow(Number(b),Number(e)));});if(expr!==(" "+s+" ")){const expr2=expr.replace(/[×]/g,"*").replace(/[÷]/g,"/").replace(/\bx\b/gi,"*").replace(/\s+/g," ").trim().replace(/^(what\s+is|what's|whats|calculate|compute|how\s+much\s+is)\s+/,"").trim();if(/^[\d+\-*/(). ]+$/.test(expr2)){const nums=expr2.match(/\d+(?:\.\d+)?/g);if(nums&&nums.length>=2){try{const v=calcExpr(expr2);if(isFinite(v))return{reply:"CALC — "+expr2+" = "+fmtCalc(v),verdict:"CALC",scriptureRef:null,relatedVerses:[],nodesUsed:[{k:"node-tru-brain",w:1,v:"local arithmetic",t:"core"}],followUp:false};}catch(_){}}}}}catch(_){}return null;}
+function localCalc(q){
+  let t=normalizeQuery(q);
+  t=t.replace(/\b(sum|total)\s+of\s+(-?\d+(?:\.\d+)?)\s+and\s+(-?\d+(?:\.\d+)?)\b/i,"$2 + $3")
+     .replace(/\bproduct\s+of\s+(-?\d+(?:\.\d+)?)\s+and\s+(-?\d+(?:\.\d+)?)\b/i,"$1 * $2")
+     .replace(/\bdifference\s+between\s+(-?\d+(?:\.\d+)?)\s+and\s+(-?\d+(?:\.\d+)?)\b/i,"$1 - $2")
+     .replace(/\bquotient\s+of\s+(-?\d+(?:\.\d+)?)\s+and\s+(-?\d+(?:\.\d+)?)\b/i,"$1 / $2")
+     .replace(/^(what\s+is|what's|whats|calculate|calc(?:ulator)?|compute|solve|evaluate|math(?:\s+(?:problem|question))?|how\s+much\s+is)\s+/i,"").replace(/[?.!=]+$/g,"").trim();
+  if(!t||t.length>200)return null;
+  const pct=t.match(/^(-?\d+(?:\.\d+)?)\s*%\s*of\s*(-?\d+(?:\.\d+)?)$/i);
+  if(pct){const v=Number(pct[1])/100*Number(pct[2]);return "CALC — "+pct[1]+"% of "+pct[2]+" = "+fmtCalc(v);}
+  const expr=t.replace(/[×]/g,"*").replace(/[÷]/g,"/").replace(/\bx\b/gi,"*").replace(/\s+/g," ");
+  if(!/^[\d+\-*/(). ]+$/.test(expr))return null;
+  const nums=expr.match(/\d+(?:\.\d+)?/g);
+  if(!nums||nums.length<2)return null;
+  if(!/[+\-*/]/.test(expr.slice(1)))return null;
+  try{const v=calcExpr(expr);if(!isFinite(v))return null;return "CALC — "+expr+" = "+fmtCalc(v);}catch(_){return null;}}
+function truGeneralSkills(q){
+  const s=q.toLowerCase().replace(/[?!.]+$/g,"").trim();
+  const now=new Date();
+  const CR=(typeof globalThis!=="undefined"&&globalThis.crypto)||null;const rnd=n=>{if(CR&&CR.getRandomValues){const a=new Uint32Array(1);CR.getRandomValues(a);return a[0]%n;}return Math.floor(Math.random()*n);};
+  const fmtNum=x=>{if(!isFinite(x))return String(x);return String(Math.round(x*1e6)/1e6);};
+  const firstFactor=n=>{for(let i=2;i*i<=n;i++)if(n%i===0)return i;return n;};
+  const cryptoUUID=()=>{if(CR&&CR.randomUUID)return CR.randomUUID();const a=new Uint8Array(16);if(CR)CR.getRandomValues(a);else for(let i=0;i<16;i++)a[i]=Math.floor(Math.random()*256);a[6]=a[6]&15|64;a[8]=a[8]&63|128;const h=[...a].map(x=>x.toString(16).padStart(2,"0")).join("");return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);};
+  const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  const parseLooseDate=str=>{
+    str=str.trim().replace(/[?!.]+$/g,"");
+    let m=str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+    m=str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if(m)return new Date(+m[3],+m[1]-1,+m[2]);
+    m=str.match(/^([a-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})?$/);
+    if(m&&MON[m[1].slice(0,3)]!==undefined)return new Date(m[3]?+m[3]:now.getFullYear(),MON[m[1].slice(0,3)],+m[2]);
+    m=str.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]{3,9})\.?,?\s*(\d{4})?$/);
+    if(m&&MON[m[2].slice(0,3)]!==undefined)return new Date(m[3]?+m[3]:now.getFullYear(),MON[m[2].slice(0,3)],+m[1]);
+    return null;
+  };
+  const U={length:{m:1,km:1000,cm:.01,mm:.001,mi:1609.344,ft:.3048,ft2:0,in:.0254,yd:.9144,nmi:1852},
+    mass:{kg:1,g:.001,mg:1e-6,lb:.45359237,oz:.0283495,st:6.35029318,t:1000},
+    volume:{l:1,ml:.001,gal:3.785411784,qt:.946352946,pt:.473176473,cup:.24,fl:.0295735,tbsp:.0147868,tsp:.00492892,floz:.0295735},
+    speed:{kmh:.277777778,kph:.277777778,mph:.44704,kn:.514444},
+    data:{kb:1e3,mb:1e6,gb:1e9,tb:1e12,kib:1024,mib:1048576,gib:1073741824,byte:1,bit:.125,bits:.125},
+    time:{s:1,sec:1,second:1,min:60,minute:60,h:3600,hr:3600,hour:3600,d:86400,day:86400,wk:604800,week:604800,yr:31557600,year:31557600}};
+  const ALIAS={"meter":"m","meters":"m","metre":"m","metres":"m","kilometer":"km","kilometers":"km","kilometre":"km","kilometres":"km","centimeter":"cm","centimeters":"cm","centimetre":"cm","centimetres":"cm","millimeter":"mm","millimeters":"mm","foot":"ft","feet":"ft","inch":"in","inches":"in","yard":"yd","yards":"yd","mile":"mi","miles":"mi","kilogram":"kg","kilograms":"kg","kilo":"kg","kilos":"kg","gram":"g","grams":"g","milligram":"mg","milligrams":"mg","pound":"lb","pounds":"lb","lbs":"lb","ounce":"oz","ounces":"oz","stone":"st","stones":"st","litre":"l","litres":"l","liter":"l","liters":"l","millilitre":"ml","millilitres":"ml","milliliter":"ml","milliliters":"ml","gallon":"gal","gallons":"gal","quart":"qt","quarts":"qt","pint":"pt","pints":"pt","tablespoon":"tbsp","tablespoons":"tbsp","tbsp":"tbsp","teaspoon":"tsp","teaspoons":"tsp","tsp":"tsp","floz":"floz","hour":"h","hours":"h","minute":"min","minutes":"min","second":"s","seconds":"s","day":"d","days":"d","week":"wk","weeks":"wk","year":"yr","years":"yr","celsius":"c","fahrenheit":"f","kelvin":"k","knot":"kn","knots":"kn"};
+  const convUnit=u=>{u=u.toLowerCase().replace(/\.$/,"");return ALIAS[u]||u;};
+  const convertUnits=(v,x,y)=>{
+    x=convUnit(x);y=convUnit(y);
+    const T=["c","f","k"];
+    if(T.includes(x)&&T.includes(y)){
+      const cc=x==="c"?v:x==="f"?(v-32)*5/9:v-273.15;
+      return y==="c"?cc:y==="f"?cc*9/5+32:cc+273.15;
+    }
+    for(const k of Object.keys(U)){if(U[k][x]!==undefined&&U[k][y]!==undefined)return v*U[k][x]/U[k][y];}
+    return null;
+  };
+  if(/^(time|date|day)\??$/.test(s)||/^(what|whats|what is|what's)\s+(?:is\s+)?(?:the\s+|current\s+|local\s+)?(time|date|day)(\s+(is\s+)?(it|today|now))?$/.test(s)){
+    if(/date|day/.test(s))return{verdict:"CALC",reply:"Today is "+now.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"})+" (your device clock — TRU is fully offline)."};
+    return{verdict:"CALC",reply:"It is "+now.toLocaleTimeString()+" (your device clock — TRU is fully offline)."};
+  }
+  const dm=s.match(/^(?:how many )?days (?:until|till|to|since|from) (.+)$/);
+  if(dm){const d=parseLooseDate(dm[1]);if(d){const ms=d-now;const days=Math.round(Math.abs(ms)/86400000);return{verdict:"CALC",reply:(ms>=0?days+" day(s) until "+d.toDateString()+".":days+" day(s) since "+d.toDateString()+".")};}}
+  const conv=s.match(/^([-+]?[\d.,]+)\s*(?:°\s*)?([a-zµ/]+)\s*(?:to|in|into|as)\s*(?:°\s*)?([a-zµ/]+)$/)||s.match(/^convert\s+([-+]?[\d.,]+)\s*(?:°\s*)?([a-zµ/]+)\s*(?:to|in|into|as)\s*(?:°\s*)?([a-zµ/]+)$/);
+  if(conv){const val=parseFloat(conv[1].replace(/,/g,""));const r=convertUnits(val,conv[2],conv[3]);if(r!==null&&!isNaN(r))return{verdict:"CALC",reply:fmtNum(val)+" "+conv[2].toLowerCase()+" = "+fmtNum(r)+" "+conv[3].toLowerCase()+"."};}
+  const pct=s.match(/^what is ([\d.,]+)\s*(?:%|percent)\s*of\s*([\d.,]+)$/);
+  if(pct)return{verdict:"CALC",reply:fmtNum(parseFloat(pct[1].replace(/,/g,""))/100*parseFloat(pct[2].replace(/,/g,"")))};
+  const wpct=s.match(/^([\d.,]+)\s*is\s*what\s*(?:%|percent)\s*of\s*([\d.,]+)$/);
+  if(wpct){const b=parseFloat(wpct[2].replace(/,/g,""));if(b)return{verdict:"CALC",reply:fmtNum(parseFloat(wpct[1].replace(/,/g,""))/b*100)+"%"};}
+  const wp=s.match(/^(?:what\s+is\s+)?([\d.,]+)\s*(?:%|pct|percent)\s*(?:of)\s*([\d.,]+)$/);if(wp)return{verdict:"CALC",reply:fmtNum(parseFloat(wp[1].replace(/,/g,""))/100*parseFloat(wp[2].replace(/,/g,"")))};const hx=s.match(/^(?:0x|hex\s+)([0-9a-f]+)(?:\s+(?:in|to)\s+(?:decimal|denary|base\s*10))?$/);if(hx)return{verdict:"CALC",reply:"0x"+hx[1]+" = "+parseInt(hx[1],16)+" (decimal)."};const bn=s.match(/^(?:0b|binary\s+)([01]+)(?:\s+(?:in|to)\s+(?:decimal|denary|base\s*10))?$/);if(bn)return{verdict:"CALC",reply:"0b"+bn[1]+" = "+parseInt(bn[1],2)+" (decimal)."};const tb=s.match(/^(\d+)\s+(?:in|to)\s+(binary|hex)$/);if(tb){const n=parseInt(tb[1]);return{verdict:"CALC",reply:n+" in "+tb[2]+" = "+(tb[2]==="hex"?"0x"+n.toString(16):"0b"+n.toString(2))+"."}}if(/^(flip|toss)\s+(a|the)\s+coin$/.test(s))return{verdict:"CALC",reply:rnd(2)?"Heads.":"Tails."};
+  const dice=s.match(/^roll\s+(?:a\s+|the\s+)?(?:(\d+)\s*d\s*(\d+)|die|dice|d\s*(\d+))$/);
+  if(dice){const n=Math.min(12,parseInt(dice[1]||"1")),f=parseInt(dice[2]||dice[3]||"6");const out=[];let tot=0;for(let k=0;k<n;k++){const v=rnd(f)+1;out.push(v);tot+=v;}return{verdict:"CALC",reply:n>1?"Rolls: "+out.join(", ")+" — total "+tot+".":"You rolled "+tot+" on a d"+f+"."};}
+  const pick=s.match(/^(?:pick|choose|select)(?:\s+one)?(?:\s+(?:from|between|among))?\s*[:\s]+(.+)$/);
+  if(pick&&/[,;]|\bor\b/.test(pick[1])){const opts=pick[1].split(/\s*(?:,|;|\bor\b)\s*/).filter(Boolean);if(opts.length>1)return{verdict:"CALC",reply:"I pick: "+opts[rnd(opts.length)]+"."};}
+  const prime=s.match(/^is\s+(\d+)\s+(?:a\s+)?prime$/);
+  if(prime){const n=parseInt(prime[1]);let isp=n>1;for(let i=2;i*i<=n;i++)if(n%i===0){isp=false;break;}return{verdict:"CALC",reply:n+" is "+(isp?"prime.":"not prime — smallest factor "+firstFactor(n)+".")};}
+  const fact=s.match(/^(?:factorial\s+of\s+(\d+)|(\d+)\s*factorial|(\d+)!)$/);
+  if(fact){const n=parseInt(fact[1]||fact[2]||fact[3]);if(n<=170){let f=1n;for(let i=2n;i<=BigInt(n);i++)f*=i;return{verdict:"CALC",reply:n+"! = "+f.toString()};}}
+  const fib=s.match(/^(?:the\s+)?(\d{1,3})(?:th|st|nd|rd)?\s*fib(?:onacci)?(?:\s+number)?$|^fib(?:onacci)?(?:\s+number)?\s+(\d{1,3})$/);
+  if(fib){const n=Math.min(90,parseInt(fib[1]||fib[2]));let x=0n,y=1n;for(let i=1;i<n;i++){const t=x+y;x=y;y=t;}return{verdict:"CALC",reply:"Fibonacci("+n+") = "+y.toString()};}
+  const sq=s.match(/^sqrt\s*\(?\s*([\d.]+)\s*\)?$|^square\s+root\s+of\s+([\d.]+)$/);
+  if(sq)return{verdict:"CALC",reply:"√"+(sq[1]||sq[2])+" = "+fmtNum(Math.sqrt(parseFloat(sq[1]||sq[2])))};
+  const pow=s.match(/^([\d.]+)\s*(?:to\s+the\s+(?:power\s+of\s+)?|\^|\*\*)(-?[\d.]+)$/);
+  if(pow)return{verdict:"CALC",reply:fmtNum(Math.pow(parseFloat(pow[1]),parseFloat(pow[2])))};
+  const b1=s.match(/^(?:convert\s+)?([\d.,]+)\s+(?:in|to|as)\s+(binary|hex|hexadecimal|octal)$/);
+  if(b1){const v=parseInt(b1[1].replace(/,/g,""),10);const m={binary:2,hex:16,hexadecimal:16,octal:8};return{verdict:"CALC",reply:b1[1]+" = "+v.toString(m[b1[2]])+" ("+b1[2]+")."};}
+  const b2=s.match(/^(?:convert\s+)?(binary|hex|hexadecimal|octal)\s+([0-9a-f]+)\s+(?:in|to|as)\s+decimal$/);
+  if(b2){const m={binary:2,hex:16,hexadecimal:16,octal:8};const dec=parseInt(b2[2],m[b2[1]]);if(!isNaN(dec))return{verdict:"CALC",reply:b2[1]+" "+b2[2]+" = "+dec+" in decimal."};}
+  const wc=s.match(/^how\s+many\s+(words|characters|chars)(?:\s+are)?(?:\s+there)?\s+in\s*[:\s]([\s\S]+)$/);
+  if(wc){const t=wc[2].trim();const n=wc[1][0]==="w"?t.split(/\s+/).filter(Boolean).length:t.replace(/\s/g,"").length;return{verdict:"CALC",reply:n+" "+(n===1?(wc[1][0]==="w"?"word":"character"):(wc[1][0]==="w"?"words":"characters"))+"."};}
+  const rev=s.match(/^reverse\s*[:\s]+([\s\S]+)$/);
+  if(rev)return{verdict:"CALC",reply:[...rev[1]].reverse().join("")};
+  const caps=s.match(/^(?:uppercase|shout)\s*[:\s]+([\s\S]+)$/);
+  if(caps)return{verdict:"CALC",reply:caps[1].toUpperCase()};
+  if(/^(?:generate\s+)?(?:a\s+)?(?:uuid|unique\s*id|random\s*id)$/.test(s))return{verdict:"CALC",reply:cryptoUUID()+" (generated locally — never sent anywhere)."};
+  const pw=/^(?:generate\s+)?(?:a\s+)?(?:random|strong)?\s*password(?:\s+of\s+length\s+(\d+))?$/.exec(s);
+  if(pw){const len=Math.min(64,Math.max(8,parseInt(pw[1]||"16")));const cs="abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$%^&*-_=+";const a=new Uint32Array(len);(self.crypto||window.crypto).getRandomValues(a);return{verdict:"CALC",reply:Array.from(a,x=>cs[x%cs.length]).join("")+" (generated locally — never sent anywhere)."};}
+  return null;
+}
+const SMALL={hi:"hello. TRU is here — sovereign offline intelligence. ask a real question and i'll ground it.",hello:"hello. TRU is here — sovereign offline intelligence. ask a real question and i'll ground it.",hey:"TRU is here. scripture or brain — what do you want to weigh?",thanks:"received. the local record holds.","thank you":"received. the local record holds.",bye:"exit clear. the local record holds.",goodbye:"exit clear. the local record holds.",help:"ask me anything local — Scripture (john 3:16), doctrine (who is jesus), knowledge terms (define fermentation), maths (2 + 2, 15% of 80, 2 times 3), time or date (what time is it), coin/dice/pick (flip a coin), or teach me with remember: term = definition.",};
+const SELF={"who are you":"I am TRU — Holographic Sovereign, not a person. A sovereign offline intelligence system. My brain, local memory, and Scripture remain on this device.","what are you":"I am TRU — Holographic Sovereign: a sovereign offline intelligence system.","what is tru":"TRU is a sovereign offline intelligence system with a local knowledge graph, Scripture, memory, and a reasoning core.","state":"Current state — TRU is online and fully local. The embedded brain (~200k nodes), full KJV, doctrine, catalogues, and memory are loaded on this device. No cloud, no network. Ask away or teach me with remember: term = definition.","how are you":"TRU is online. The local brain is warm and the structural graph is active.","how do you work":"I tokenize locally, rank the embedded brain with BM25, consult the KJV, run deterministic skill routines, retain interaction history, and return a grounded verdict — all on this device, no network.","what can you do":"I can search the local brain, retrieve and cross-reference Scripture, remember what you teach me, run deterministic skills (maths, unit conversions, time and date, coin/dice/pick, text tools), expose graph pathways, and answer only from local evidence — offline.","what is truth":"I distinguish direct Scripture, grounded knowledge, local reasoning, and gaps rather than pretending certainty.","are you ai":"I am TRU — Holographic Sovereign, an offline intelligence system.","who made you":"I was built as TRU — Holographic Sovereign: a local, offline intelligence system living entirely on this device.","who created you":"I was built as TRU — Holographic Sovereign: a local, offline intelligence system living entirely on this device."};
+const DOCTRINE={"who is jesus":"Jesus is the Christ — the Son of God, the Word made flesh, God come near to save. He was crucified for sin, died, and rose again. He is Lord, Saviour, and Judge. (John 1:1,14; John 3:16; Rom 1:4)","who is god":"God is the one Creator — spirit, eternal, holy, just, and merciful. He is Father, Son, and Holy Spirit. (Gen 1:1; Deut 6:4; John 4:24)","what is the gospel":"The gospel: Christ died for our sins, was buried, and rose again on the third day, that whoever believes in him has eternal life. (1 Cor 15:3-4; John 3:16)","what is grace":"Grace is God's unmerited favour — salvation given freely, not earned. (Eph 2:8-9; Titus 2:11)","what is faith":"Faith is trust in God and his word — the substance of things hoped for, the evidence of things not seen. (Heb 11:1; Rom 10:17)","what is sin":"Sin is missing the mark — lawlessness, rebellion against God. All have sinned. (Rom 3:23; 1 John 3:4)","what is repentance":"Repentance is turning — a change of mind and direction, turning from sin to God. (Acts 3:19; Luke 13:3)"};
+function normalizeQuery(q){return q.toLowerCase().trim().replace(/[!.?,]+$/g,"");}
+function smallTalk(q){const k=normalizeQuery(q);if(SMALL[k])return SMALL[k];if(SELF[k])return SELF[k];for(const key of Object.keys(SELF)){if(k.includes(key))return SELF[key];}for(const key of Object.keys(SMALL)){if(k===key||k.startsWith(key+" ")||k.endsWith(" "+key))return SMALL[key];}return null;}
+function doctrine(q){const k=normalizeQuery(q);if(DOCTRINE[k])return DOCTRINE[k];for(const key of Object.keys(DOCTRINE)){if(k===key)return DOCTRINE[key];const re=new RegExp("(?:^|\\b)"+key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?:\\b|$)");if(re.test(k)&&k.length-key.length<28)return DOCTRINE[key];}return null;}
+const STOP=new Set("a an the and or of to in on for with by from as is are was were be been being it this that these those i you he she we they me him her us them my your his its our their not no nor so if then than at into over under about out up down all any each every some such only own same too very can could would should may might must will shall do does did done have has had having".split(" "));
+function uniqueTokens(text){const raw=text.toLowerCase().replace(/[^a-z0-9\s']/g," ").split(/\s+/).filter(t=>t.length>1&&!STOP.has(t));const seen=new Set(),out=[];for(const t of raw){if(seen.has(t))continue;seen.add(t);out.push(t);}return out;}
+function bm25(tok,docIdx,index,k1=1.2,b=0.75){const df=index.df.get(tok)||0;if(!df)return 0;const n=index.nDocs,idf=Math.log(1+(n-df+0.5)/(df+0.5));const post=index.postings.get(tok)||[];const tf=post.filter(i=>i===docIdx).length||(post.includes(docIdx)?1:0);if(!tf)return 0;const dl=index.docLen[docIdx]||1;const denom=tf+k1*(1-b+b*(dl/Math.max(index.avgLen,1)));return idf*((tf*(k1+1))/denom);}
+function parseVerseRef(q){const n=normalizeQuery(q);if(!/^(?:(?:1|2|3)\s*)?[a-z]+(?:\s+of\s+[a-z]+)?\s+\d+(?::\d+(?:\s*-\s*\d+)?)?(?:\s*-\s*\d+(?::\d+)?)?$/.test(n))return null;const parts=n.split(/\s+/);let bookParts=[],rest="";for(let i=0;i<parts.length;i++){if(/^\d/.test(parts[i])&&bookParts.length){rest=parts.slice(i).join(" ");break;}bookParts.push(parts[i]);}if(!rest)return null;const bookKey=bookParts.join(" ").replace(/\s+/g,"");const bookKeySpaced=bookParts.join(" ");const canon=BOOK[bookKey]||BOOK[bookKeySpaced]||BOOK[bookParts[0]]||(bookParts.length>1?BOOK[bookParts.slice(0,2).join(" ")]:null);if(!canon)return null;return (canon+" "+rest).replace(/\s+/g," ").trim();}
+function hashLayout(key,i){let h=2166136261;for(let c=0;c<key.length;c++){h^=key.charCodeAt(c);h=Math.imul(h,16777619);}h^=i*2654435761;const r=n=>{const x=Math.sin(n)*10000;return x-Math.floor(x);};const layer=(i%7)-3,angle=r(h)*Math.PI*2,radius=80+r(h+1)*420+(i%5)*18;return{x:Math.cos(angle)*radius+layer*12,y:(r(h+2)-0.5)*280+layer*28,z:Math.sin(angle)*radius*0.85};}
+
+class TruEngine{
+  constructor(){this.nodes=[];this.nodeMap=new Map();this.edges=[];this.adj=new Map();this.visKeys=new Set();this.history=[];this.index=null;this.ready=false;this.kjv=[];this.kjvMap=new Map();this.xref={};this.packed=[];}
+  get totalNodes(){return this.nodes.length;}get totalVerses(){return this.kjv.length;}get totalXrefs(){return Object.keys(this.xref).length;}get totalEdges(){return this.edges.length;}
+  hydrate(brain,kjv,xref){this.packed=brain;this.kjv=kjv;this.xref=xref;this.kjvMap.clear();for(const[ref,text] of kjv)this.kjvMap.set(ref.toLowerCase(),text);}
+  *ingestNodes(){
+    const total=this.packed.length+CORE_KEYS.length;
+    this.nodes=[];this.nodeMap.clear();this.edges=[...CORE_EDGES];this.adj.clear();
+    const coreDefs={"node-core-tru-presence":{v:"TRU — Holographic Sovereign. Local offline intelligence core.",t:"core"},"node-tru-brain":{v:"Local knowledge graph indexed with BM25 for grounded retrieval.",t:"core"},"node-layer-scripture":{v:"King James Version corpus — complete verse index, local only.",t:"scripture"},"node-layer-memory":{v:"Local interaction memory retained on this device.",t:"memory"},"node-layer-reasoning":{v:"Deterministic routing across doctrine, Scripture, and brain.",t:"tool"},"node-layer-brain":{v:"Structural search layer over packed knowledge nodes.",t:"tool"}};
+    let i=0;
+    for(const k of CORE_KEYS){const def=coreDefs[k]||{v:k,t:"core"};const corePositions={"node-core-tru-presence":{x:0,y:0,z:0},"node-tru-brain":{x:-72,y:-18,z:16},"node-layer-scripture":{x:76,y:-10,z:4},"node-layer-memory":{x:-34,y:68,z:-14},"node-layer-reasoning":{x:38,y:68,z:18},"node-layer-brain":{x:0,y:-78,z:-20}};const node={k,v:def.v,t:def.t,source:"LOCAL_CORE",i,degree:0,base:corePositions[k]||hashLayout(k,i)};this.nodes.push(node);this.nodeMap.set(k,node);this.visKeys.add(k);i++;if(i%50===0)yield{done:i,total};}
+    const chunk=4000;
+    for(let s=0;s<this.packed.length;s+=chunk){
+      for(const row of this.packed.slice(s,s+chunk)){
+        const k=row[0],v=row[1],t=row[2]||"knowledge";
+        if(this.nodeMap.has(k))continue;
+        const node={k,v,t,i,degree:0,base:hashLayout(k,i)};
+        this.nodes.push(node);this.nodeMap.set(k,node);
+        if(t==="core"||t==="doctrine"||t==="scripture"||t==="memory"||t==="tool")this.visKeys.add(k);
+        else if(i%40===0)this.visKeys.add(k);
+        i++;
+      }
+      yield{done:Math.min(i,total),total};
+    }
+    // --- CONNECT EVERYTHING ---
+    const layerFor=t=>({scripture:"node-layer-scripture",memory:"node-layer-memory",doctrine:"node-layer-reasoning",core:"node-layer-reasoning",tool:"node-layer-brain"}[t]||"node-layer-brain");
+    const addEdge=(source,target,relation)=>{
+      if(source===target)return;if(!this.nodeMap.has(source)||!this.nodeMap.has(target))return;
+      this.edges.push({source,target,relation});
+    };
+    for(const n of this.nodes){
+      if(CORE_SET.has(n.k))continue;
+      addEdge(n.k,layerFor(n.t),"grounds-in");
+      if(n.t==="doctrine")addEdge(n.k,"node-core-tru-presence","informs");
+    }
+    const byPrefix=new Map();
+    for(const n of this.nodes){
+      if(CORE_SET.has(n.k))continue;
+      const stem=n.k.includes("_")?n.k.split("_").slice(0,2).join("_"):n.k.slice(0,Math.min(12,n.k.length));
+      const list=byPrefix.get(stem)||[];
+      if(list.length<48)list.push(n.k);
+      byPrefix.set(stem,list);
+    }
+    for(const keys of byPrefix.values()){
+      for(let j=0;j<keys.length-1;j++)addEdge(keys[j],keys[j+1],"related");
+      if(keys.length>=3)addEdge(keys[0],keys[keys.length-1],"related");
+    }
+    const tokenHub=new Map();
+    for(const n of this.nodes){
+      if(n.t==="knowledge"&&!this.visKeys.has(n.k))continue;
+      const toks=uniqueTokens(n.k.replace(/[_-]/g," ")+" "+n.v.slice(0,120));
+      for(const tok of toks.slice(0,6)){
+        if(tok.length<4)continue;
+        const list=tokenHub.get(tok)||[];
+        if(list.length<12&&!list.includes(n.k))list.push(n.k);
+        tokenHub.set(tok,list);
+      }
+    }
+    let tokenEdges=0;
+    for(const keys of tokenHub.values()){
+      if(keys.length<2)continue;
+      for(let j=0;j<keys.length-1&&tokenEdges<80000;j++){addEdge(keys[j],keys[j+1],"shares-token");tokenEdges++;}
+    }
+    this.adj.clear();
+    for(const e of this.edges){
+      const a=this.adj.get(e.source)||[];a.push({key:e.target,relation:e.relation});this.adj.set(e.source,a);
+      const b=this.adj.get(e.target)||[];b.push({key:e.source,relation:e.relation});this.adj.set(e.target,b);
+    }
+    for(const n of this.nodes)n.degree=(this.adj.get(n.k)||[]).length;
+  }
+  *buildIndex(onlyHot=false){
+    const postings=new Map(),df=new Map(),docLen=new Uint16Array(this.nodes.length);let totalTok=0;const targets=[];
+    for(let i=0;i<this.nodes.length;i++){const n=this.nodes[i];if(!onlyHot||n.t!=="knowledge"||this.visKeys.has(n.k))targets.push(i);}
+    const chunk=onlyHot?1200:5000;
+    for(let s=0;s<targets.length;s+=chunk){
+      for(const i of targets.slice(s,s+chunk)){
+        const n=this.nodes[i];const toks=uniqueTokens(n.k.replace(/[_-]/g," ")+" "+n.v);
+        docLen[i]=toks.length;totalTok+=toks.length;
+        for(const tok of toks){let p=postings.get(tok);if(!p){p=[];postings.set(tok,p);}p.push(i);df.set(tok,(df.get(tok)||0)+1);}
+      }
+      yield{done:Math.min(s+chunk,targets.length),total:targets.length};
+    }
+    this.index={postings,df,docLen,avgLen:totalTok/Math.max(targets.length,1),nDocs:this.nodes.length};this.ready=true;
+  }
+  retrieve(q,limit=8){if(!this.index)return[];const toks=uniqueTokens(q);if(!toks.length)return[];const scores=new Map();
+    for(const tok of toks){const post=this.index.postings.get(tok);if(!post)continue;for(const i of post)scores.set(i,(scores.get(i)||0)+bm25(tok,i,this.index));}
+    return[...scores.entries()].sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([i,score])=>({node:this.nodes[i],score}));}
+  visibleNodes(filter,searchHits){
+    const hitSet=new Set(searchHits),out=[];
+    for(const n of this.nodes){
+      if(filter!=="all"&&n.t!==filter)continue;
+      if(searchHits.length){if(!hitSet.has(n.k)&&!this.visKeys.has(n.k))continue;}
+      else if(n.t==="knowledge"&&!this.visKeys.has(n.k))continue;
+      out.push(n);if(out.length>2800)break;
+    }
+    for(const k of CORE_KEYS){const n=this.nodeMap.get(k);if(n&&!out.includes(n))out.unshift(n);}
+    return out;
+  }
+  adjacent(key){const list=this.adj.get(key)||[];for(const x of list)this.visKeys.add(x.key);return list;}
+  path(a,b){if(a===b)return[a];const queue=[a],prev=new Map([[a,null]]);while(queue.length){const cur=queue.shift();for(const{key}of this.adj.get(cur)||[]){if(prev.has(key))continue;prev.set(key,cur);if(key===b){const chain=[];let x=b;while(x){chain.push(x);x=prev.get(x)??null;}return chain.reverse();}queue.push(key);}if(prev.size>800)break;}return[a,b];}
+  lookupVerse(ref){const key=ref.toLowerCase().trim();const exact=this.kjvMap.get(key);if(exact)return{ref:key,text:exact};for(const[r,t]of this.kjvMap){if(r.replace(/\s+/g,"")===key.replace(/\s+/g,""))return{ref:r,text:t};}return null;}
+  relatedVerses(seed,limit=4){const links=this.xref[seed]||this.xref[seed.toLowerCase()]||[];const out=[];for(const ref of links){const hit=this.lookupVerse(ref);if(hit)out.push(hit);if(out.length>=limit)break;}return out;}
+  remember(term,definition){const k=term.toLowerCase().trim().replace(/\s+/g,"_").replace(/[^a-z0-9_]/g,"");if(!k)return{reply:"remember requires a term. example: remember: grace = unmerited favour",verdict:"GAP",scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};const existing=this.nodeMap.get(k);if(existing){existing.v=definition;existing.t="memory";}else{const i=this.nodes.length;const node={k,v:definition,t:"memory",source:"LOCAL_MEMORY",i,degree:0,base:hashLayout(k,i)};this.nodes.push(node);this.nodeMap.set(k,node);this.visKeys.add(k);this.edges.push({source:k,target:"node-layer-memory",relation:"grounds-in"});const a=this.adj.get(k)||[];a.push({key:"node-layer-memory",relation:"grounds-in"});this.adj.set(k,a);const b=this.adj.get("node-layer-memory")||[];b.push({key:k,relation:"grounds-in"});this.adj.set("node-layer-memory",b);if(this.index){const toks=uniqueTokens(k.replace(/_/g," ")+" "+definition);const next=new Uint16Array(this.nodes.length);next.set(this.index.docLen);next[i]=toks.length;this.index.docLen=next;for(const tok of toks){let p=this.index.postings.get(tok);if(!p){p=[];this.index.postings.set(tok,p);}p.push(i);this.index.df.set(tok,(this.index.df.get(tok)||0)+1);}this.index.nDocs=this.nodes.length;}}return{reply:"local memory retained: "+k+" = "+definition,verdict:"MEMORY",scriptureRef:null,relatedVerses:[],nodesUsed:[{k,w:1,v:definition,t:"memory"}],followUp:false};}
+  query(raw){const q=raw.trim();if(!q)return{reply:"ask a real question.",verdict:"GAP",scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};const __pre=truArithmeticPre(q);if(__pre)return __pre;
+if(window.TRU_CLAIMS&&/^(?:show me why|why\?|sources?|citations?|where did that come from|prove it)\.?$/i.test(q.trim())){const last=[...this.history].reverse().find(h=>h.r&&h.r.verdict&&h.r.verdict!=="WHY"&&h.r.verdict!=="GAP"&&h.r.verdict!=="CLARIFY");if(last){const rep=TRU_CLAIMS.why(last.r.nodes||[],last.r.scriptureRef||null,last.q);const res={reply:rep,verdict:"WHY",scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};this.history.push({q,r:{reply:rep,verdict:"WHY",nodes:[]},ts:Date.now()});return res;}}
+    const mem=q.match(/^remember\s*:\s*(.+?)\s*=\s*(.+)$/i);if(mem){const res=this.remember(mem[1],mem[2]);this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:res.nodesUsed.map(n=>n.k)},ts:Date.now()});return res;}
+    const gs=truGeneralSkills(q);if(gs){const res={reply:gs.reply,verdict:gs.verdict,scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:[]},ts:Date.now()});if(typeof saveLocalState==="function")saveLocalState();return res;}
+    const calcRes=localCalc(q);if(calcRes){const res={reply:calcRes,verdict:"CALC",scriptureRef:null,relatedVerses:[],nodesUsed:[{k:"node-tru-brain",w:1,v:"local arithmetic",t:"core"}],followUp:false};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:["node-tru-brain"]},ts:Date.now()});if(typeof saveLocalState==="function")saveLocalState();return res;}
+    if(window.TRU_COMFORT&&TRU_COMFORT.match(q)){const c=TRU_COMFORT.answer(q);const res={reply:c,verdict:"COMFORT",scriptureRef:null,relatedVerses:[],nodesUsed:[{k:"node-tru-brain",w:1,v:"comfort & care — pastoral responses for the hard days",t:"knowledge"}],followUp:false};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:res.nodesUsed.map(n=>n.k)},ts:Date.now()});return res;}
+    const talk=smallTalk(q);if(talk){const res={reply:talk,verdict:"TRU_CORE",scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:[]},ts:Date.now()});return res;}
+    const doc=doctrine(q);if(doc){const nodes=[],hits=this.retrieve(q,3);for(const h of hits){nodes.push({k:h.node.k,w:h.score,v:h.node.v,t:h.node.t});this.visKeys.add(h.node.k);}const res={reply:doc,verdict:"TRUTH",scriptureRef:null,relatedVerses:[],nodesUsed:nodes,followUp:false};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:nodes.map(n=>n.k)},ts:Date.now()});return res;}
+    const verseRef=parseVerseRef(q);if(verseRef){const hit=this.lookupVerse(verseRef);if(hit){const related=this.relatedVerses(hit.ref,4);const res={reply:hit.ref+"\n"+hit.text,verdict:"SCRIPTURE",scriptureRef:hit.ref,relatedVerses:related,nodesUsed:[{k:"node-layer-scripture",w:1,v:hit.text,t:"scripture"}],followUp:related.length>0};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:["node-layer-scripture"]},ts:Date.now()});return res;}}else if(/^((?:(?:1|2|3)\s*)?[a-z]+(?:\s+of\s+[a-z]+)?)\s+(\d+)$/i.test(q.trim())&&parseVerseRef(q.trim()+" : 1")){const seedRef=parseVerseRef(q.trim()+" : 1");const hit2=this.lookupVerse(seedRef);if(hit2){const res={reply:hit2.ref+"\n"+hit2.text,verdict:"SCRIPTURE",scriptureRef:hit2.ref,relatedVerses:this.relatedVerses(hit2.ref,4),nodesUsed:[{k:"node-layer-scripture",w:1,v:hit2.text,t:"scripture"}],followUp:true};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:["node-layer-scripture"]},ts:Date.now()});saveLocalState();return res;}}
+    const brainHits=this.retrieve(q,12);for(const h of brainHits)this.visKeys.add(h.node.k);
+    for(const h of brainHits.slice(0,4)){for(const a of this.adj.get(h.node.k)||[])this.visKeys.add(a.key);}
+    if(brainHits.length){const top=brainHits[0];const nodes=brainHits.map(h=>({k:h.node.k,w:h.score,v:h.node.v,t:h.node.t}));const reply=top.node.v+(brainHits.length>1?"\n\nrelated local nodes: "+brainHits.slice(1,4).map(h=>h.node.k).join(", "):"");const res={reply:reply.trim(),verdict:top.node.t==="scripture"?"SCRIPTURE":"REASON",scriptureRef:null,relatedVerses:[],nodesUsed:nodes,followUp:brainHits.length>1};this.history.push({q,r:{reply:res.reply,verdict:res.verdict,nodes:nodes.map(n=>n.k)},ts:Date.now()});return res;}
+    const gap={reply:"GAP — nothing local matches that. TRU runs fully offline on what is embedded. try a Scripture reference (e.g. john 3:16), a doctrine question, maths or unit conversion (\"15% of 80\", \"5 km to miles\"), time or date, dice/coin/pick, or teach with remember: term = definition.",verdict:"GAP",scriptureRef:null,relatedVerses:[],nodesUsed:[],followUp:false};this.history.push({q,r:{reply:gap.reply,verdict:gap.verdict,nodes:[]},ts:Date.now()});return gap;}
+}
+
+const DATA_B64={brain:"",kjv:"",xref:""};
+
+function b64ToBytes(b64){const bin=atob(b64);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
+async function gunzipJson(b64){const bytes=b64ToBytes(b64);if(typeof DecompressionStream==="undefined")throw new Error("This browser cannot decompress gzip.");const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));return JSON.parse(await new Response(stream).text());}
+const engine=new TruEngine();
+let ready=false,busy=false,filter="all",search="",searchHits=[],selected=null,second=null,panel="none",chat=[],voice=false,status="● BOOTING · LOCAL ENGINE";
+function colour(n){if(n.k==="node-core-tru-presence")return"#e7fbff";if(n.t==="memory")return"#69f0ae";if(n.t==="scripture")return"#ffd166";if(n.t==="doctrine")return"#b9a4ff";if(n.t==="core"||n.t==="tool")return"#00e5ff";return"#4c91aa";}
+const cam={yaw:0.18,pitch:0.14,zoom:1.55},drag={on:false,x:0,y:0,moved:0};
+function project(p,w,h){const cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);const x=p.x*cy-p.z*sy,z=p.x*sy+p.z*cy,y=p.y*cp-z*sp,zz=p.y*sp+z*cp;return{x:w/2+(x/(cam.zoom+zz/700))*0.92,y:h/2+(y/(cam.zoom+zz/700))*0.92,z:zz};}
+function startCanvas(){const canvas=document.getElementById("field"),ctx=canvas.getContext("2d",{alpha:false,desynchronized:true});let lastFrame=0,frameHandle=0;
+  function draw(){const now=performance.now();if(now-lastFrame<33){frameHandle=requestAnimationFrame(draw);return;}lastFrame=now;const w=innerWidth,h=innerHeight,scale=Math.min(devicePixelRatio||1,1.25);if(canvas.width!==Math.floor(w*scale)||canvas.height!==Math.floor(h*scale)){canvas.width=Math.floor(w*scale);canvas.height=Math.floor(h*scale);canvas.style.width=w+"px";canvas.style.height=h+"px";ctx.setTransform(scale,0,0,scale,0,0);}ctx.clearRect(0,0,w,h);if(!drag.on)cam.yaw+=0.0008;
+    const nodes=engine.visibleNodes(filter,searchHits),edges=engine.edges.filter(e=>{const a=engine.nodeMap.get(e.source),b=engine.nodeMap.get(e.target);return a&&b&&nodes.includes(a)&&nodes.includes(b)}),path=selected&&second?engine.path(selected,second):[],pathSet=new Set(path),hitSet=new Set(searchHits),projected=[],byKey=new Map();for(const n of nodes){const p=project(n.base,w,h),item={n,x:p.x,y:p.y,z:p.z};projected.push(item);byKey.set(n.k,item);}projected.sort((a,b)=>a.z-b.z);
+    ctx.lineCap="round";for(const e of edges){const a=byKey.get(e.source),b=byKey.get(e.target);if(!a||!b)continue;const hot=pathSet.has(e.source)&&pathSet.has(e.target),fire=firingKeys.has(e.source)&&firingKeys.has(e.target),semantic=e.relation==="shared indexed term"||e.relation==="shares-token";ctx.strokeStyle=hot?"rgba(245,200,107,.92)":fire?"rgba(0,229,255,.78)":semantic?"rgba(0,229,255,.16)":"rgba(0,229,255,.08)";ctx.lineWidth=hot?2.2:fire?2:semantic?1:.7;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+    const core=byKey.get("node-core-tru-presence");if(core){const pulse=1+Math.sin(now*.0022)*.055,base=64*pulse;ctx.save();ctx.globalAlpha=.1;ctx.fillStyle="#00e5ff";ctx.shadowColor="#00e5ff";ctx.shadowBlur=90;ctx.beginPath();ctx.arc(core.x,core.y,base*.9,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.95;const glow=ctx.createRadialGradient(core.x,core.y,2,core.x,core.y,base);glow.addColorStop(0,"#ffffff");glow.addColorStop(.28,"#effcff");glow.addColorStop(.62,"#52e5fa");glow.addColorStop(1,"rgba(0,229,255,.08)");ctx.fillStyle=glow;ctx.shadowColor="#00e5ff";ctx.shadowBlur=48;ctx.beginPath();ctx.arc(core.x,core.y,base,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=.9;ctx.strokeStyle="#ffffff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(core.x,core.y,base*.58,0,Math.PI*2);ctx.stroke();ctx.restore();}
+    for(const item of projected){const n=item.n,isCore=n.k==="node-core-tru-presence",isSel=n.k===selected||n.k===second,isHit=hitSet.has(n.k),isFire=firingKeys.has(n.k),isLayer=CORE_KEYS.includes(n.k),front=item.z>=0;if(isCore)continue;const r=isLayer?18:isSel?7:isFire?7.5:isHit?4.5:2.4+Math.min(2.5,n.degree/30);ctx.globalAlpha=front?1:.28;ctx.fillStyle=isFire?"#e7fbff":colour(n);ctx.shadowColor=colour(n);ctx.shadowBlur=isFire?26:isLayer||isSel?20:5;ctx.beginPath();ctx.arc(item.x,item.y,r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;if(isFire){ctx.strokeStyle="rgba(0,229,255,.72)";ctx.lineWidth=1.5;ctx.stroke();}if(isLayer||isSel||isFire){ctx.globalAlpha=front?1:.5;ctx.fillStyle=isSel?"#f5c86b":"#bdeeff";ctx.font="10px ui-monospace,monospace";ctx.shadowColor="#00131c";ctx.shadowBlur=8;ctx.fillText(n.k.replace(/^node-/,'').replace(/-/g,' '),item.x+10,item.y+3);ctx.shadowBlur=0;}}
+    if(core){ctx.globalAlpha=1;ctx.fillStyle="#fff";ctx.font="600 12px ui-monospace,monospace";ctx.shadowColor="#00e5ff";ctx.shadowBlur=14;ctx.fillText("TRU CORE",core.x+73,core.y+4);ctx.shadowBlur=0;}
+    ctx.globalAlpha=1;frameHandle=requestAnimationFrame(draw);}
+  frameHandle=requestAnimationFrame(draw);
+  canvas.addEventListener("pointerdown",e=>{drag.on=true;drag.x=e.clientX;drag.y=e.clientY;drag.moved=0;canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener("pointermove",e=>{if(!drag.on)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;drag.moved+=Math.abs(dx)+Math.abs(dy);cam.yaw+=dx*.005;cam.pitch=Math.max(-1.2,Math.min(1.2,cam.pitch+dy*.004));});
+  function endDrag(e){if(!drag.on)return;drag.on=false;if(drag.moved<8){let best=null,bestD=42;for(const item of projected){const d=Math.hypot(item.x-e.clientX,item.y-e.clientY),limit=item.n.k==="node-core-tru-presence"?90:Math.max(14,item.n.k.startsWith("node-")?25:12);if(d<limit&&d<bestD){bestD=d;best=item.n;}}if(best){if(best.k==="node-core-tru-presence"&&!e.shiftKey)openPresence();else openDetail(best.k,e.shiftKey||e.metaKey||e.ctrlKey);}else{panel="none";selected=null;second=null;render();}}}
+  canvas.addEventListener("pointerup",endDrag);canvas.addEventListener("pointercancel",()=>{drag.on=false;});canvas.addEventListener("wheel",e=>{e.preventDefault();cam.zoom=Math.max(.35,Math.min(3.2,cam.zoom*(e.deltaY>0?1.06:.94)));},{passive:false});document.addEventListener("visibilitychange",()=>{if(document.hidden){cancelAnimationFrame(frameHandle);}else{lastFrame=0;frameHandle=requestAnimationFrame(draw);}});}
+
+function setBoot(phase,ratio){document.querySelector(".loadtext").textContent=phase;document.querySelector(".bar i").style.width=Math.round(ratio*100)+"%";}
+function openPresence(){selected="node-core-tru-presence";panel="presence";render();}
+function openDetail(key,additive){if(additive&&selected&&selected!==key)second=key;else{second=null;selected=key;}panel="detail";render();}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function renderChat(){const el=document.getElementById("chat");el.innerHTML=chat.map(m=>{if(m.role==="ready")return'<div class="ready"><b>TRU ONLINE</b><br>'+esc(m.text)+"</div>";if(m.role==="user")return'<div class="msg user">'+esc(m.text)+"</div>";const nodes=(m.nodes||[]).map(k=>'<button type="button" data-k="'+esc(k)+'">'+esc(k)+"</button>").join("");return'<div class="msg"><div class="vd" data-v="'+m.verdict+'">'+m.verdict+" · "+m.ms+"ms</div>"+esc(m.text)+(nodes?'<div class="used">'+nodes+"</div>":"")+"</div>";}).join("");el.querySelectorAll(".used button").forEach(b=>b.onclick=()=>openDetail(b.dataset.k,false));el.scrollTop=el.scrollHeight;}
+function render(){document.getElementById("counts").textContent=ready?engine.totalNodes.toLocaleString()+" local nodes · "+engine.totalEdges.toLocaleString()+" edges · "+engine.totalVerses.toLocaleString()+" verses · "+engine.visibleNodes(filter,searchHits).length.toLocaleString()+" in view":"BOOTING STRUCTURAL GRAPH…";document.getElementById("status").textContent=status;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active",c.dataset.f===filter));const pan=document.getElementById("panel");
+  if(panel==="none")pan.hidden=true;else{pan.hidden=false;
+    if(panel==="presence"){const core=engine.nodeMap.get("node-core-tru-presence"),adj=engine.adjacent("node-core-tru-presence");
+      pan.innerHTML='<button type="button" class="close" id="pclose">×</button><h2>TRU PRESENCE</h2><div class="eyebrow">TRU — HOLOGRAPHIC SOVEREIGN · ACTIVE CORE</div><div class="stategrid"><div class="stat"><b>CURRENT INTERNAL STATE</b><span>'+(busy?"PROCESSING LOCAL QUERY":"STEADY · GRAPH ONLINE")+'</span></div><div class="stat"><b>GRAPH EDGES</b><span>'+engine.totalEdges.toLocaleString()+' structural links</span></div></div><h3>LOCAL MEMORY LOGS</h3><div class="memory">'+(engine.history.length?engine.history.slice(-8).reverse().map(h=>"<div><b>"+new Date(h.ts).toLocaleTimeString()+"</b> · "+esc(h.q.slice(0,90))+" → "+h.r.verdict+"</div>").join(""):"<p>no local interaction logs yet.</p>")+'</div><h3>IMMEDIATELY ADJACENT NODE PATHWAYS</h3>'+(adj.slice(0,24).map(x=>'<div class="pathway"><strong>'+esc(x.key)+"</strong><span>"+esc(x.relation)+'</span><button type="button" data-k="'+esc(x.key)+'">FOCUS</button></div>').join("")||"<p>no structural edge yet.</p>")+'<h3>CORE RECORD</h3><pre>'+esc(JSON.stringify({k:core&&core.k,v:(core&&core.v)||IDENTITY,identity:IDENTITY,status:STATUS_LINE,nodes:engine.totalNodes,edges:engine.totalEdges,verses:engine.totalVerses,xrefs:engine.totalXrefs},null,2))+"</pre>";
+      pan.querySelector("#pclose").onclick=()=>{panel="none";render();};pan.querySelectorAll(".pathway button").forEach(b=>b.onclick=()=>openDetail(b.dataset.k,true));
+    }else if(panel==="detail"&&selected){const n=engine.nodeMap.get(selected),adj=engine.adjacent(selected);
+      pan.innerHTML='<button type="button" class="close" id="pclose">×</button><h2>'+esc((n&&n.k)||selected)+'</h2><div class="eyebrow">'+esc((n&&n.t)||"node")+" · degree "+((n&&n.degree)||0)+(second?" · path to "+esc(second):"")+"</div><p>"+esc((n&&n.v)||"")+"</p>"+(second?"<h3>PATHWAY</h3><p>"+esc(engine.path(selected,second).join(" → "))+"</p>":"")+"<h3>ADJACENT ("+adj.length+")</h3>"+(adj.slice(0,30).map(x=>'<div class="pathway"><strong>'+esc(x.key)+"</strong><span>"+esc(x.relation)+'</span><button type="button" data-k="'+esc(x.key)+'">FOCUS</button></div>').join("")||"<p>no structural edge yet.</p>");
+      pan.querySelector("#pclose").onclick=()=>{panel="none";render();};pan.querySelectorAll(".pathway button").forEach(b=>b.onclick=()=>openDetail(b.dataset.k,true));
+    }else if(panel==="help"){pan.innerHTML='<button type="button" class="close" id="pclose">×</button><h2>HELP</h2><p>TRU runs fully offline. Brain, KJV, and cross-refs are embedded. Nodes are wired to structural layers, prefix families, and shared-token hubs.</p><h3>ASK</h3><p>• Scripture: john 3:16<br>• Doctrine: who is jesus<br>• Teach: remember: coil = integrity layer<br>• Plain search over the local brain</p><h3>GRAPH</h3><p>Drag orbit · scroll zoom · click node · Shift+click second node for pathway · click luminous core for presence.</p>';pan.querySelector("#pclose").onclick=()=>{panel="none";render();}}
+  }
+  renderChat();
+}
+function thinkMs(q){
+  // minimum 1.5s; scale with detail
+  const words=q.trim().split(/\s+/).filter(Boolean).length;
+  const chars=q.length;
+  const hasScripture=/\b(?:gen|exo|lev|num|deut|josh|judg|ruth|sam|kings|chr|ezra|neh|esth|job|psa|prov|ecc|song|isa|jer|lam|ezek|dan|hos|joel|amos|obad|jonah|mic|nah|hab|zeph|hag|zech|mal|matt|mark|luke|john|acts|rom|cor|gal|eph|phil|col|thess|tim|titus|philem|heb|james|pet|jude|rev)\b|\d+:\d+/i.test(q);
+  const hasMulti=/\band\b|\bor\b|\bcompare\b|\bexplain\b|\bwhy\b|\bhow\b|\bversus\b|\bvs\b/i.test(q);
+  let ms=1500;
+  ms+=Math.min(4000, words*180);          // +0.18s per word, cap +4s
+  ms+=Math.min(2500, Math.floor(chars/8)*15); // length bonus
+  if(hasScripture) ms+=600;
+  if(hasMulti) ms+=900;
+  if(words>=12) ms+=800;
+  if(words>=20) ms+=1200;
+  return Math.min(12000, Math.max(1500, ms));
+}
+const firingKeys=new Set();
+let firePhase=0;
+function runFireSequence(keys, durationMs){
+  firingKeys.clear();
+  const list=[...keys];
+  if(!list.length){
+    // fall back to core + a sample of visible
+    list.push("node-core-tru-presence","node-layer-reasoning","node-tru-brain");
+    for(const n of engine.visibleNodes(filter,searchHits).slice(0,40)) list.push(n.k);
+  }
+  const start=performance.now();
+  const steps=Math.max(8, Math.min(40, list.length));
+  function tick(){
+    const t=(performance.now()-start)/durationMs;
+    firePhase=t;
+    const count=Math.min(list.length, 2+Math.floor(t*steps*1.4));
+    firingKeys.clear();
+    // wave through candidates
+    for(let i=0;i<count;i++){
+      const idx=Math.floor((i+t*list.length*0.7)%list.length);
+      firingKeys.add(list[idx]);
+      // also light neighbors
+      for(const a of (engine.adj.get(list[idx])||[]).slice(0,3)) firingKeys.add(a.key);
+    }
+    if(t<1) requestAnimationFrame(tick);
+    else { firingKeys.clear(); firePhase=0; }
+  }
+  requestAnimationFrame(tick);
+}
+async function ask(raw){
+  const q=(raw??document.getElementById("askInput").value).trim();
+  if(!q||busy||!ready)return;
+  document.getElementById("askInput").value="";
+  busy=true;
+  const delay=0;
+  status="● SEARCHING · LOCAL GRAPH";
+  chat.push({role:"user",text:q});
+  const pulse=document.getElementById("thinkPulse");
+  const label=document.getElementById("thinkLabel");
+  const sub=document.getElementById("thinkSub");
+  pulse.hidden=true;
+  label.textContent="SEARCHING";
+  sub.textContent="activating local graph · ranking evidence";
+  render();
+  // pre-retrieve so we can fire real nodes while "thinking"
+  let preview=[];
+  try{
+    preview=engine.retrieve(q,24).map(h=>h.node.k);
+    for(const k of preview) engine.visKeys.add(k);
+    for(const k of preview.slice(0,8)){for(const a of engine.adj.get(k)||[])engine.visKeys.add(a.key);}
+  }catch(_){}
+  runFireSequence(preview, 1);
+  const t0=performance.now();
+  {
+    let res;
+    try{
+      if(!DICT_LOADED&&DEF_RE.test(q)){status="\u25cf LOADING REFERENCE \u00b7 DICTIONARY";document.getElementById("status").textContent=status;await ensureDict();}
+      res=engine.query(q);
+      if(!DICT_LOADED&&res.verdict==="GAP"){status="\u25cf LOADING REFERENCE \u00b7 DICTIONARY";document.getElementById("status").textContent=status;await ensureDict();res=engine.query(q);}
+    }catch(err){res={reply:"local engine fault: "+(err.message||String(err)),verdict:"GAP",nodesUsed:[]};}
+    const computeMs=Math.round(performance.now()-t0);
+    // ensure displayed think time reflects the deliberate delay
+    const ms=Math.max(delay, computeMs);
+    busy=false;
+    pulse.hidden=true;
+    firingKeys.clear();
+    status="● "+res.verdict+" · "+ms+"ms · AIR-GAPPED";
+    chat.push({role:"tru",text:res.reply,verdict:res.verdict,ms,nodes:res.nodesUsed.map(n=>n.k)});
+    if(voice&&typeof speechSynthesis!=="undefined"){try{speechSynthesis.cancel();}catch(_){}const u=new SpeechSynthesisUtterance(res.reply.slice(0,600));u.rate=0.96;u.pitch=0.88;speechSynthesis.speak(u);}
+    if(res.nodesUsed[0])selected=res.nodesUsed[0].k;
+    // brief afterglow on answer nodes
+    for(const n of res.nodesUsed) firingKeys.add(n.k);
+    setTimeout(()=>{firingKeys.clear();},900);
+    render();
+  }
+}
+const DEF_RE=/^(what\s+(is|are|was|were)|who\s+(is|was|were)|define|what\s+does|meaning\s+of|what's|whats|definition\s+of)\b/i;
+let DICT_LOADED=false,DICT_PROMISE=null;
+async function loadSharedSubstrate(){
+  const files=[["brain","assets/tru-brain.js","TRU_BRAIN"],["kjv","assets/tru-kjv.js","TRU_KJV"],["xref","assets/tru-xref.js","TRU_XREF"]];
+  for(const[key,src,wvar] of files){
+    if(DATA_B64[key])continue;
+    await new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=src;sc.onload=res;sc.onerror=()=>rej(new Error("failed to load "+src));document.head.appendChild(sc);});
+    DATA_B64[key]=window[wvar];
+  }
+}
+async function ensureDict(){
+  if(DICT_LOADED)return;
+  if(!DICT_PROMISE)DICT_PROMISE=(async()=>{
+    await new Promise((res,rej)=>{const sc=document.createElement("script");sc.src="assets/tru-dict.js";sc.onload=res;sc.onerror=()=>rej(new Error("dictionary sidecar failed to load"));document.head.appendChild(sc);});
+    if(!window.TRU_DICT)throw new Error("TRU_DICT missing from sidecar");
+    const rows=await gunzipJson(window.TRU_DICT);
+    DATA_B64.dict=window.TRU_DICT;
+    engine.packed=engine.packed.concat(rows);
+    const layout=engine.ingestNodes();for(;;){const s=layout.next();if(s.done)break;await new Promise(r=>setTimeout(r,0));}
+    const gen=engine.buildIndex();for(;;){const s=gen.next();if(s.done)break;await new Promise(r=>setTimeout(r,0));}
+    DICT_LOADED=true;
+  })();
+  try{await DICT_PROMISE;}finally{if(!DICT_LOADED)DICT_PROMISE=null;}
+}
+async function boot(){try{setBoot("Loading shared substrate…",0.04);await loadSharedSubstrate();setBoot("Decoding shared brain…",0.08);const[brain,kjv,xref]=await Promise.all([gunzipJson(DATA_B64.brain),gunzipJson(DATA_B64.kjv),gunzipJson(DATA_B64.xref)]);setBoot("Graph decoded · "+(b64ToBytes(DATA_B64.brain).byteLength/1024/1024).toFixed(1)+" MB",0.55);engine.hydrate(brain.map(row=>[row[0],row[1],row[2]||"knowledge"]),kjv,xref);const layout=engine.ingestNodes();for(;;){const step=layout.next();if(step.done)break;const{done,total}=step.value;setBoot("Wiring structural graph · "+done.toLocaleString()+" / "+total.toLocaleString(),0.56+(done/Math.max(total,1))*0.08);await new Promise(r=>setTimeout(r,0));}const gen=engine.buildIndex();for(;;){const step=gen.next();if(step.done)break;const{done,total}=step.value;setBoot("Indexing local BM25 · "+done.toLocaleString()+" / "+total.toLocaleString(),0.64+(done/Math.max(total,1))*0.34);await new Promise(r=>setTimeout(r,0));}setBoot("Graph online · "+engine.totalEdges.toLocaleString()+" edges · BM25 ready",1);chat=[{role:"ready",text:"A sovereign offline intelligence system.\n"+engine.totalNodes.toLocaleString()+" nodes, "+engine.totalEdges.toLocaleString()+" edges, "+engine.totalVerses.toLocaleString()+" KJV verses — all local.\n\nClick the luminous core. Ask a question, look up a verse, or teach with remember: term = definition."}];status="● READY · AIR-GAPPED · LOCAL BM25";ready=true;document.getElementById("loading").classList.add("done");document.getElementById("askInput").disabled=false;document.getElementById("askBtn").disabled=false;startCanvas();render();}catch(err){setBoot(err.message||String(err),1);}}
+document.getElementById("search").addEventListener("input",e=>{search=e.target.value;clearTimeout(window.__st);window.__st=setTimeout(()=>{if(!ready||!search.trim()){searchHits=[];return;}searchHits=engine.retrieve(search,28).map(h=>h.node.k);for(const k of searchHits)engine.visKeys.add(k);for(const k of searchHits.slice(0,8)){for(const a of engine.adj.get(k)||[])engine.visKeys.add(a.key);}},140);});
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filter=c.dataset.f;});
+document.getElementById("reset").onclick=()=>{selected=null;second=null;filter="all";search="";searchHits=[];panel="none";document.getElementById("search").value="";render();};
+document.getElementById("presence").onclick=openPresence;
+document.getElementById("voice").onclick=()=>{voice=!voice;document.getElementById("voice").textContent=voice?"VOICE ON":"VOICE OFF";};
+document.getElementById("help").onclick=()=>{panel="help";render();};
+document.getElementById("askForm").onsubmit=e=>{e.preventDefault();ask();};
+boot();
+
+</script>
+<a href="PORTAL.html" style="position:fixed;top:12px;right:16px;z-index:9999;color:#d8a657;font-family:monospace;text-decoration:none;border:1px solid #d8a657;padding:4px 10px;border-radius:6px;background:rgba(0,0,0,.6)">TRU PORTAL</a><a data-tru-portal href="../TRU_PORTAL.html" style="position:fixed;bottom:14px;right:14px;z-index:2147483647;background:rgba(10,7,3,.88);color:#e8c96a;border:1px solid #c9a227;border-radius:999px;padding:8px 14px;font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,.5);">&#9672; TRU Portal</a>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Declaration Of Independence — TRU Book Reader</title>
+<style>
+:root{--bg:#0a0703;--fg:#fff3dc;--muted:#c9b088;--subtle:#8a7355;--accent:#ffd484;--line:rgba(255,205,120,.22)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse 70% 80% at 30% 20%,rgba(122,86,24,.18),transparent 70%),var(--bg);color:var(--fg);font:15px/1.75 Georgia,'Times New Roman',serif;min-height:100dvh}
+.wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+h1{color:var(--accent);font-size:24px;letter-spacing:.08em;text-align:center;margin-bottom:4px}
+.eyebrow{color:var(--subtle);text-align:center;font:600 10px/1.4 ui-monospace,monospace;letter-spacing:.24em;text-transform:uppercase;margin-bottom:22px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.controls button{background:rgba(255,205,120,.1);color:var(--accent);border:1px solid rgba(255,205,120,.4);border-radius:20px;padding:9px 18px;font:700 12px/1 ui-monospace,monospace;letter-spacing:.08em;cursor:pointer}
+.controls button:hover{background:rgba(255,205,120,.22)}
+select{background:#171006;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:600 12px/1 ui-monospace,monospace;max-width:340px}
+.pos{color:var(--muted);text-align:center;font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.1em;margin-bottom:18px}
+#text{white-space:pre-wrap;color:var(--fg);font-size:17px;line-height:1.9;border:1px solid var(--line);border-radius:14px;background:rgba(20,13,4,.6);padding:26px 28px;min-height:200px}
+.chat{margin-top:22px;border:1px solid var(--line);border-radius:12px;background:rgba(16,10,3,.7);overflow:hidden}
+.chatlog{max-height:150px;overflow:auto;padding:10px 14px;font:12px/1.6 ui-monospace,monospace;color:var(--muted)}
+.chatlog .you{color:var(--accent)}
+.chatbar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.chatbar input{flex:1;background:#171006;color:var(--fg);border:1px solid var(--line);border-radius:18px;padding:9px 14px;outline:none;font:13px/1.4 ui-monospace,monospace}
+.chatbar button{background:var(--accent);color:#241703;border:0;border-radius:18px;padding:9px 16px;font:700 12px/1 ui-monospace,monospace;cursor:pointer;letter-spacing:.06em}
+.hint{color:var(--subtle);text-align:center;font:10px/1.6 ui-monospace,monospace;letter-spacing:.08em;margin-top:14px}
+</style>
+</head>
+<body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<div class="wrap">
+  <h1>Declaration Of Independence</h1>
+  <div class="eyebrow">TRU BOOK READER · OFFLINE · READS ALOUD</div>
+  <div class="controls">
+    <button id="play">▶ PLAY</button>
+    <button id="pause">⏸ PAUSE</button>
+    <button id="stop">⏹ STOP</button>
+    <button id="cover">⏮ START</button>
+    <select id="chap" aria-label="Chapter"></select>
+  </div>
+  <div class="pos" id="pos">…</div>
+  <div id="text"></div>
+  <div class="chat">
+    <div class="chatlog" id="clog"></div>
+    <div class="chatbar">
+      <input id="cin" placeholder="stop · pause · resume · next · back · find humility · where" aria-label="Reader chat">
+      <button id="csend">SEND</button>
+    </div>
+  </div>
+  <div class="hint">say “stop” here or press the button — the book keeps your place. Opened from TRU? this page registered itself into TRU’s LIBRARY.</div>
+</div>
+<script>
+const DATA_B64="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";
+function b64Bytes(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+async function gunzipJson(b64){const stream=new Blob([b64Bytes(b64)]).stream().pipeThrough(new DecompressionStream("gzip"));return JSON.parse(await new Response(stream).text());}
+const TTS={state:"idle",
+  available(){return "speechSynthesis" in window;},
+  pick(){const vs=this.available()?speechSynthesis.getVoices():[];return vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith("en"))||vs[0]||null;},
+  stop(){this.state="idle";try{speechSynthesis.cancel();}catch(e){}ui();},
+  pause(){if(this.state!=="speaking")return;try{speechSynthesis.pause();this.state="paused";}catch(e){}ui();},
+  resume(){if(this.state!=="paused")return;try{speechSynthesis.resume();this.state="speaking";}catch(e){}ui();},
+  speak(text,onend){
+    if(!this.available()){clog("no speech engine in this browser");return;}
+    this.stop();
+    const chunks=[];let buf="";
+    for(const s of String(text).split(/(?<=[.;:!?»"])"+/)){if((buf+" "+s).length>230){if(buf.trim())chunks.push(buf.trim());buf=s;}else buf=(buf?buf+" ":"")+s;}
+    if(buf.trim())chunks.push(buf.trim());
+    const v=this.pick();this.state="speaking";ui();
+    let i=0;const next=()=>{if(this.state!=="speaking")return;
+      if(i>=chunks.length){this.state="idle";if(onend)try{onend();}catch(e){}ui();return;}
+      const u=new SpeechSynthesisUtterance(chunks[i++]);
+      if(v)u.voice=v;u.rate=.98;u.onend=next;u.onerror=next;
+      try{speechSynthesis.speak(u);}catch(e){this.state="idle";ui();}
+    };next();}
+};
+let BOOK=null,ci=0,playing=false;
+const KEY="tru-book-pos:"+"declaration_of_independence";
+function save(){try{localStorage.setItem(KEY,JSON.stringify({i:ci}));}catch(e){}}
+function posLabel(){return "chapter "+(ci+1)+" of "+BOOK.chapters.length;}
+function ui(){document.getElementById("play").textContent=playing?"▶ PLAYING":"▶ PLAY";
+  document.getElementById("pos").textContent=(playing?("● READING · "):"")+posLabel();}
+function showChapter(){const t=document.getElementById("text");
+  t.textContent=BOOK.chapters[ci]||"";t.scrollTop=0;
+  const s=document.getElementById("chap");s.value=ci;ui();}
+function advance(){if(ci+1<BOOK.chapters.length)ci++;else{playing=false;TTS.stop();clog("— end of the book —");return false;}save();return true;}
+function play(){if(!TTS.available()){clog("no speech engine in this browser");return;}
+  playing=true;save();ui();
+  const step=()=>{if(!playing)return;
+    const ch=BOOK.chapters[ci]||"";showChapter();save();
+    const announce=BOOK.title+". "+(BOOK.chapterWord||"Chapter")+" "+(ci+1)+". "+ch;
+    TTS.speak(announce,()=>{if(!playing)return;if(advance())step();});
+  };step();}
+function stop(){playing=false;TTS.stop();save();clog("stopped at "+posLabel());}
+async function boot(){
+  BOOK=await gunzipJson(DATA_B64);
+  try{
+    const lib=JSON.parse(localStorage.getItem("tru-library")||"[]");
+    if(!lib.some(e=>e.ref===BOOK.ref))lib.push({ref:BOOK.ref,title:BOOK.title,slug:BOOK.slug});
+    localStorage.setItem("tru-library",JSON.stringify(lib));
+  }catch(e){}
+  try{const p=JSON.parse(localStorage.getItem(KEY)||"null");if(p&&p.i<BOOK.chapters.length)ci=p.i;}catch(e){}
+  const s=document.getElementById("chap");
+  s.innerHTML=BOOK.chapters.map((c,i)=>'<option value="'+i+'">'+"Chapter "+(i+1)+"</option>").join("");
+  s.onchange=()=>{ci=+s.value;save();showChapter();};
+  showChapter();
+}
+document.getElementById("play").onclick=()=>{if(TTS.state==="paused")TTS.resume();else play();};
+document.getElementById("pause").onclick=()=>TTS.pause();
+document.getElementById("stop").onclick=stop;
+document.getElementById("cover").onclick=()=>{ci=0;save();showChapter();play();};
+function clog(t,you){const el=document.getElementById("clog");
+  el.innerHTML+='<div class="'+(you?"you":"")+'">'+(you?"you: ":"TRU: ")+t.replace(/</g,"&lt;")+"</div>";el.scrollTop=el.scrollHeight;}
+function handle(raw){
+  const q=raw.trim();if(!q)return;
+  clog(q,true);const low=q.toLowerCase();
+  if(/\b(stop)\b/.test(low)&&low.length<12){stop();return;}
+  if(/\b(pause)\b/.test(low)&&low.length<12){TTS.pause();clog("paused");return;}
+  if(/\b(resume|play)\b/.test(low)&&low.length<12){if(TTS.state==="paused")TTS.resume();else play();return;}
+  if(/\bnext\b/.test(low)&&low.length<12){playing=false;TTS.stop();if(advance())play();return;}
+  if(/\b(back|previous)\b/.test(low)&&low.length<14){playing=false;TTS.stop();if(ci>0)ci--;save();showChapter();play();return;}
+  if(/\bwhere\b/.test(low)&&low.length<12){clog("you are at "+posLabel());return;}
+  const m=low.match(/^(?:find|search)\s+(.{2,})$/);
+  if(m){const needle=m[1];const idx=BOOK.chapters.findIndex(c=>c.toLowerCase().includes(needle));
+    if(idx<0){clog("not found in this book");return;}
+    playing=false;TTS.stop();ci=idx;save();showChapter();play();
+    clog('found “'+needle+'” in chapter '+(idx+1)+" — reading from there");return;}
+  clog('commands: stop · pause · resume · next · back · find <text> · where');
+}
+document.getElementById("csend").onclick=()=>{const i=document.getElementById("cin");handle(i.value);i.value="";};
+document.getElementById("cin").addEventListener("keydown",e=>{if(e.key==="Enter"){handle(e.target.value);e.target.value="";}});
+boot();
+</script>
+</body>
+</html>

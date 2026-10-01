@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tetris — TRU Arcade</title>
+<style>
+body{background:#06020a;color:#eee;font:14px/1.4 monospace;display:flex;flex-direction:column;align-items:center;min-height:100dvh;margin:0;padding:10px}
+canvas{border:2px solid #86a;margin-top:6px;background:#0a0612}
+h1{font-size:15px;letter-spacing:.3em}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>TETRIS</h1>
+<canvas id="c" width="300" height="600"></canvas>
+<p>←/→ move · ↑ rotate · ↓ soft-drop · space hard-drop</p>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+const N=10,ROWS=20,GS=30;
+const SH=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
+const SC=["#4df","#fd4","#b4f","#f84","#4f8","#48f","#f4a"];
+let grid,piece,px,py,score,lines,over,paused,dropT=0,dropI=600,keys={};
+function init(){
+ grid=Array.from({length:ROWS},()=>Array(N).fill(-1));
+ score=0;lines=0;over=false;paused=true;dropI=600;spawn();document.title="tetris";
+}
+function spawn(){
+ const t=Math.floor(Math.random()*7);
+ piece=SH[t].map(r=>[...r]);pc=t;px=3;py=0;
+ if(collide(px,py,piece)){over=true;document.title="tetris — game over"}
+}
+let pc=0;
+function collide(nx,ny,p){
+ for(let r=0;r<p.length;r++)for(let cc=0;cc<p[r].length;cc++){
+  if(!p[r][cc])continue;
+  const X=nx+cc,Y=ny+r;
+  if(X<0||X>=N||Y>=ROWS)return true;
+  if(Y>=0&&grid[Y][X]>=0)return true;
+ }
+ return false;
+}
+function rot(p){return p[0].map((_,i)=>p.map(r=>r[i]).reverse())}
+function lock(){
+ for(let r=0;r<piece.length;r++)for(let cc=0;cc<piece[r].length;cc++)
+  if(piece[r][cc]&&py+r>=0)grid[py+r][px+cc]=pc;
+ let cleared=0;
+ for(let r=ROWS-1;r>=0;r--){
+  if(grid[r].every(v=>v>=0)){grid.splice(r,1);grid.unshift(Array(N).fill(-1));cleared++;r++}
+ }
+ if(cleared){score+=[0,100,300,500,800][cleared]*1;lines+=cleared;dropI=Math.max(120,dropI-25)}
+ spawn();document.title="tetris — "+score;
+}
+function hardDrop(){while(!collide(px,py+1,piece))py++;lock();paused=false}
+init();
+addEventListener("keydown",e=>{
+ keys[e.key]=true;
+ if(["ArrowLeft","ArrowRight","ArrowDown","ArrowUp"," "].includes(e.key))e.preventDefault();
+ if(over){if(e.key==="r")init();return}
+ if(paused){paused=true;if(["ArrowLeft","ArrowRight","ArrowDown","ArrowUp"," "].includes(e.key))paused=false}
+ if(e.key==="ArrowLeft"&&!collide(px-1,py,piece))px--;
+ if(e.key==="ArrowRight"&&!collide(px+1,py,piece))px++;
+ if(e.key==="ArrowDown"&&!collide(px,py+1,piece)){py++;score+=1}
+ if(e.key==="ArrowUp"){const rp=rot(piece);if(!collide(px,py,rp))piece=rp}
+ if(e.key===" ")hardDrop();
+});
+c.onclick=()=>{if(over)init();else paused=false};
+let last=0;
+function loop(t){
+ const dt=t-last;last=t;
+ if(!paused&&!over){
+  dropT+=dt;
+  if(dropT>dropI){dropT=0;
+   if(!collide(px,py+1,piece))py++;else lock();
+  }
+ }
+ x.fillStyle="#0a0612";x.fillRect(0,0,300,600);
+ for(let r=0;r<ROWS;r++)for(let cc=0;cc<N;cc++){
+  if(grid[r][cc]>=0){x.fillStyle=SC[grid[r][cc]];x.fillRect(cc*GS+1,r*GS+1,GS-2,GS-2)}
+  x.strokeStyle="rgba(255,255,255,.04)";x.strokeRect(cc*GS,r*GS,GS,GS);
+ }
+ if(!over)for(let r=0;r<piece.length;r++)for(let cc=0;cc<piece[r].length;cc++)
+  if(piece[r][cc]&&py+r>=0){x.fillStyle=SC[pc];x.fillRect((px+cc)*GS+1,(py+r)*GS+1,GS-2,GS-2)}
+ x.fillStyle="#ccc";x.font="13px monospace";x.fillText("score "+score+"  lines "+lines,8,18);
+ if(paused&&!over){x.fillStyle="#999";x.fillText("click or press a key to start",42,300)}
+ if(over){x.fillStyle="#fff";x.font="26px monospace";x.fillText("GAME OVER",58,290);x.font="13px monospace";x.fillText("click or R to retry",82,320)}
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>

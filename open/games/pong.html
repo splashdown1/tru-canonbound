@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pong — TRU Arcade</title>
+<style>
+body{background:#02060d;color:#eee;font:14px/1.4 monospace;display:flex;flex-direction:column;align-items:center;min-height:100dvh;margin:0;padding:10px}
+canvas{border:2px solid #556;margin-top:6px;background:#01030a}
+h1{font-size:15px;letter-spacing:.3em}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>PONG</h1>
+<canvas id="c" width="700" height="440"></canvas>
+<p>↑/↓ (or mouse) · first to 7</p>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+let py,ay,ball,ps,as,over,paused,keys={},mouseY=null;
+function init(){
+ py=170;ay=170;ps=0;as=0;over=false;paused=true;
+ serve(1);document.title="pong";
+}
+function serve(d){ball={x:350,y:220,vx:5.2*d,vy:(Math.random()*4-2)};if(!ball.vy)ball.vy=1.5}
+init();
+addEventListener("keydown",e=>{keys[e.key]=true;if(e.key.startsWith("Arrow"))e.preventDefault();if(paused&&!over)paused=false});
+addEventListener("keyup",e=>keys[e.key]=false);
+c.onmousemove=e=>{const b=c.getBoundingClientRect();mouseY=(e.clientY-b.top)*(440/b.height);if(paused&&!over)paused=false};
+c.onclick=()=>{if(over)init();else paused=false};
+let last=0;
+function loop(t){
+ const dt=Math.min(40,t-last);last=t;
+ if(!paused&&!over){
+  if(keys.ArrowUp)py-=7;if(keys.ArrowDown)py+=7;
+  if(mouseY!==null)py=mouseY-35;
+  py=Math.max(0,Math.min(370,py));
+  ay+=Math.max(-6.4,Math.min(6.4,(ball.y-35-ay)*.09));
+  ay=Math.max(0,Math.min(370,ay));
+  const steps=2;
+  for(let s=0;s<steps;s++){
+   ball.x+=ball.vx*dt/16/steps;ball.y+=ball.vy*dt/16/steps;
+   if(ball.y<8||ball.y>432)ball.vy*=-1;
+   if(ball.x<26&&ball.x>14&&ball.y>py-6&&ball.y<py+76&&ball.vx<0){
+    ball.vx=Math.abs(ball.vx)*1.05;ball.vy+=(ball.y-(py+35))*.08;
+   }
+   if(ball.x>674&&ball.x<686&&ball.y>ay-6&&ball.y<ay+76&&ball.vx>0){
+    ball.vx=-Math.abs(ball.vx)*1.05;ball.vy+=(ball.y-(ay+35))*.08;
+   }
+   if(ball.x<-10){ps++;document.title="pong — "+ps+":"+as;check();serve(1);break}
+   if(ball.x>710){as++;document.title="pong — "+ps+":"+as;check();serve(-1);break}
+  }
+ }
+ x.fillStyle="#01030a";x.fillRect(0,0,700,440);
+ x.strokeStyle="rgba(255,255,255,.25)";x.setLineDash([8,10]);
+ x.beginPath();x.moveTo(350,0);x.lineTo(350,440);x.stroke();x.setLineDash([]);
+ x.fillStyle="#eee";x.fillRect(16,py,10,70);x.fillRect(674,ay,10,70);
+ x.beginPath();x.arc(ball.x,ball.y,7,0,7);x.fill();
+ x.font="34px monospace";x.fillText(ps,300,40);x.fillText(as,380,40);
+ x.font="13px monospace";x.fillStyle="#888";
+ if(paused&&!over)x.fillText("click or press an arrow to start",280,240);
+ if(over){x.fillStyle="#fff";x.font="26px monospace";x.fillText(ps>as?"YOU WIN!":"CPU WINS",285,210);x.font="13px monospace";x.fillText("click to rematch",305,240)}
+ requestAnimationFrame(loop);
+}
+function check(){if(ps>=7||as>=7)over=true}
+requestAnimationFrame(loop);
+</script></body></html>

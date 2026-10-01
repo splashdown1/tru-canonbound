@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minesweeper — TRU Arcade</title>
+<style>
+body{background:#0a0a02;color:#eee;font:14px/1.4 monospace;display:flex;flex-direction:column;align-items:center;min-height:100dvh;margin:0;padding:10px}
+canvas{border:2px solid #884;margin-top:6px;background:#111}
+h1{font-size:15px;letter-spacing:.3em}
+p{color:#998}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>MINESWEEPER</h1>
+<canvas id="c" width="480" height="480"></canvas>
+<p>left-click reveal · right-click flag</p>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+const N=16,GS=30,M=40;
+let grid,rev,flag,dead,won,first,timeLeft=999;
+function init(){
+ grid=Array.from({length:N},()=>Array(N).fill(0));
+ rev=Array.from({length:N},()=>Array(N).fill(false));
+ flag=Array.from({length:N},()=>Array(N).fill(false));
+ dead=won=false;timeLeft=999;first=true;document.title="minesweeper";
+}
+init();
+function plant(sx,sy){
+ let placed=0;
+ while(placed<M){const mx=Math.floor(Math.random()*N),my=Math.floor(Math.random()*N);
+  if(grid[my][mx]===9||Math.abs(mx-sx)<2&&Math.abs(my-sy)<2)continue;
+  grid[my][mx]=9;placed++}
+ for(let y=0;y<N;y++)for(let xx=0;xx<N;xx++){if(grid[y][xx]===9)continue;let n=0;
+  for(let dy=-1;dy<2;dy++)for(let dx=-1;dx<2;dx++){const ny=y+dy,nx=xx+dx;if(ny>=0&&ny<N&&nx>=0&&nx<N&&grid[ny][nx]===9)n++}
+  grid[y][xx]=n}
+}
+function flood(a,b){
+ if(a<0||a>=N||b<0||b>=N||rev[b][a]||flag[b][a])return;
+ rev[b][a]=true;
+ if(grid[b][a]===0)for(let dy=-1;dy<2;dy++)for(let dx=-1;dx<2;dx++)flood(a+dx,b+dy);
+}
+const NC=["","#6cf","#6d6","#f66","#a6f","#fd6","#7dd","#fa6","#ccc"];
+function draw(){
+ x.fillStyle="#111";x.fillRect(0,0,480,480);
+ for(let y=0;y<N;y++)for(let a=0;a<N;a++){
+  const px=a*GS,py=y*GS;
+  if(rev[y][a]){x.fillStyle="#0a0a0a";x.fillRect(px,py,GS,GS);
+   const v=grid[y][a];
+   if(v===9){x.fillStyle="#f22";x.fillRect(px,py,GS,GS)}
+   else if(v){x.fillStyle=NC[v];x.font="16px monospace";x.fillText(v,px+10,py+21)}}
+  else{x.fillStyle=flag[y][a]?"#553":"#333";x.fillRect(px+1,py+1,GS-2,GS-2);
+   if(flag[y][a]){x.font="16px monospace";x.fillText("⚑",px+8,py+21)}}
+ }
+ x.fillStyle="#ccc";x.font="14px monospace";
+ x.fillText(dead?"BOOM — click to retry":won?"CLEARED! — click to retry":"mines: "+M+"   time: "+timeLeft,10,476);
+ requestAnimationFrame(draw);
+}
+c.addEventListener("contextmenu",e=>e.preventDefault());
+c.onclick=e=>{if(dead||won){init();return}};
+c.addEventListener("mousedown",e=>{
+ if(dead||won){init();return}
+ const b=c.getBoundingClientRect(),a=Math.floor((e.clientX-b.left)*(480/b.width)/GS),y=Math.floor((e.clientY-b.top)*(480/b.height)/GS);
+ if(a<0||a>=N||y<0||y>=N)return;
+ if(e.button===2){if(!rev[y][a])flag[y][a]=!flag[y][a];return}
+ if(flag[y][a])return;
+ if(first){plant(a,y);first=false;setInterval(()=>{if(!dead&&!won&&timeLeft>0)timeLeft--},1000)}
+ if(grid[y][a]===9){dead=true;for(let yy=0;yy<N;yy++)for(let xx=0;xx<N;xx++)if(grid[yy][xx]===9)rev[yy][xx]=true;document.title="minesweeper — boom"}
+ else{flood(a,y);
+  let left=0;for(let yy=0;yy<N;yy++)for(let xx=0;xx<N;xx++)if(!rev[yy][xx])left++;
+  if(left===M){won=true;document.title="minesweeper — cleared"}}
+});
+draw();
+</script></body></html>

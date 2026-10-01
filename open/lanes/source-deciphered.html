@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRU · Source Deciphered</title>
+<meta name="description" content="TRU source-deciphered Scripture evidence: Hebrew, Greek, morphology, lexical glosses, and transparent translation boundaries.">
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#070a10;color:#edf2fb}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 70% 0,#182844 0,#070a10 48%);line-height:1.55}.wrap{max-width:1080px;margin:auto;padding:48px 22px 80px}.eyebrow{letter-spacing:.18em;color:#8bb8ff;font-size:.75rem}.hero{max-width:800px}.hero h1{font-size:clamp(2.6rem,8vw,6.2rem);line-height:.94;margin:14px 0 20px;letter-spacing:-.055em}.hero p{font-size:1.12rem;color:#aebbd0}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:36px 0}.card{border:1px solid #273650;background:#101827cc;border-radius:18px;padding:20px;margin:18px 0}.card b{display:block;font-size:1.7rem;color:#dce9ff}.card span{color:#91a1ba;font-size:.88rem}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:30px 0}.button{display:inline-block;border:1px solid #4876b8;border-radius:999px;padding:12px 18px;color:#f4f8ff;text-decoration:none;background:#173157}.button.alt{background:transparent;border-color:#34445d}.note{border-left:3px solid #78aef5;padding-left:16px;color:#aebbd0}.small{font-size:.88rem;color:#8190a7;margin-top:38px}code{color:#b7d6ff}.query{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.query input{flex:1 1 280px;min-width:0;border:1px solid #34445d;border-radius:999px;background:#0b1220;color:#edf2fb;padding:13px 16px;font:inherit}.query button{border:1px solid #4876b8;border-radius:999px;padding:12px 18px;color:#f4f8ff;background:#173157;font:inherit;cursor:pointer}.examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.example{border:1px solid #34445d;border-radius:999px;padding:7px 12px;color:#b8c9e2;background:#0b1220;cursor:pointer}.result{display:none;margin-top:18px;white-space:pre-wrap;overflow:auto;max-height:560px;background:#0b1220;border:1px solid #273650;border-radius:14px;padding:16px;color:#c8d6ea;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}.result.show{display:block}.error{color:#ffb4b4}.api{font-size:.92rem;color:#9eacc2}.api a{color:#a9cbff}@media(max-width:700px){.grid{grid-template-columns:1fr}.hero h1{font-size:3.5rem}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="eyebrow">TRU · SOURCE DECIPHERED</div>
+<section class="hero">
+<h1>Read beneath the translation.</h1>
+<p>TRU’s original-language evidence layer places Hebrew and Greek text, morphology, lexical glosses, and transparent translation boundaries beside the verse. It does not pretend that one English tradition exhausts the source.</p>
+</section>
+<section class="grid">
+<div class="card"><b>23,145</b><span>Hebrew evidence verses · OSHB/WLC morphology</span></div>
+<div class="card"><b>7,927</b><span>Greek evidence verses · MorphGNT/SBLGNT morphology</span></div>
+<div class="card"><b>31,072</b><span>Aligned source records across the canon</span></div>
+</section>
+<section class="card">
+<h2>Inspect a verse now</h2>
+<p>Enter a reference to query the public, read-only source API. The response keeps four layers separate: source text, lexical range, received English, and any future AI rendering. This endpoint does not silently generate interpretation.</p>
+<form class="query" id="source-form">
+<input id="source-ref" value="John 1:1" aria-label="Scripture reference" autocomplete="off">
+<button type="submit">Inspect source →</button>
+</form>
+<div class="examples" aria-label="Example references">
+<button class="example" data-ref="John 1:1">John 1:1</button>
+<button class="example" data-ref="Genesis 1:1">Genesis 1:1</button>
+<button class="example" data-ref="John 3:16">John 3:16</button>
+<button class="example" data-ref="Psalm 23:1">Psalm 23:1</button>
+</div>
+<pre class="result" id="source-result" aria-live="polite"></pre>
+<p class="note">The local runtime is an evidence and translation instrument—not a claim that an automated rendering replaces scholarship, context, or discernment.</p>
+</section>
+<section class="card">
+<h2>Use it with another AI</h2>
+<p>Give the model the API URL below. A model with web or HTTP access can retrieve the structured source evidence without crawling the large HTML runtime. Ask it to preserve the fields and label any generated translation as AI rendering.</p>
+<p class="api"><a href="https://tru-splashdown2.zocomputer.io/api/tru/source">Open API manifest →</a><br><code>https://tru-splashdown2.zocomputer.io/api/tru/source?ref=John%201:1</code></p>
+<p class="api">The API is public, read-only, CORS-enabled for this Pages site, and returns <code>sourceText</code>, <code>words</code>, <code>lemma</code>, <code>morph</code>, lexical glosses, and <code>receivedEnglish</code> separately.</p>
+</section>
+<div class="actions"><a class="button" href="../TRU_Canonical_Layer.html">Return to the canonical layer →</a><a class="button alt" href="https://github.com/splashdown1/tru-canonical-layer/tree/main/app">Inspect the source package →</a><a class="button alt" href="https://github.com/splashdown1/tru-canonical-layer">View repository →</a></div>
+<p class="small">The runtime is self-contained for air-gapped use. GitHub Pages hosts the interface; the read-only source API is a separate online evidence surface. Updated 2026-08-02 UTC.</p>
+</main>
+<script>
+const API="https://tru-splashdown2.zocomputer.io/api/tru/source";
+const form=document.getElementById("source-form");
+const input=document.getElementById("source-ref");
+const result=document.getElementById("source-result");
+function renderSource(data){
+  const verse=data.verse;
+  const lines=[verse.ref+" · "+(verse.testament==="nt"?"Greek":"Hebrew"),verse.alignment.source,"","SOURCE TEXT",verse.sourceText,"","WORDS"];
+  for(const word of verse.words){
+    const gloss=word.gloss?" · "+word.gloss.id+": "+word.gloss.definition:"";
+    lines.push(word.surface+" · lemma "+word.lemma+" · morph "+word.morph+(word.pos?" · pos "+word.pos:"")+gloss);
+  }
+  lines.push("","RECEIVED ENGLISH",data.receivedEnglish||"not available","","AI RENDERING","not generated by this read-only endpoint");
+  return lines.join("\n");
+}
+async function inspectSource(){
+  result.className="result show";
+  result.textContent="Loading source evidence…";
+  try{
+    const response=await fetch(API+"?ref="+encodeURIComponent(input.value.trim()),{headers:{Accept:"application/json"}});
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.error||"Reference not found");
+    result.textContent=renderSource(data);
+  }catch(error){
+    result.textContent="Source lookup failed: "+String(error.message||error);
+    result.className="result show error";
+  }
+}
+form.addEventListener("submit",event=>{event.preventDefault();inspectSource();});
+document.querySelectorAll(".example").forEach(button=>button.addEventListener("click",()=>{input.value=button.dataset.ref;inspectSource();}));
+</script>
+<a data-tru-portal href="../../TRU_PORTAL.html" style="position:fixed;bottom:14px;right:14px;z-index:2147483647;background:rgba(10,7,3,.88);color:#e8c96a;border:1px solid #c9a227;border-radius:999px;padding:8px 14px;font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,.5);">&#9672; TRU Portal</a>
+</body>
+</html>

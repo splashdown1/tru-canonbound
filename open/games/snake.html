@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snake — TRU Arcade</title>
+<style>
+body{background:#020a04;color:#eee;font:14px/1.4 monospace;display:flex;flex-direction:column;align-items:center;min-height:100dvh;margin:0;padding:10px}
+canvas{border:2px solid #484;margin-top:6px;background:#020803}
+h1{font-size:15px;letter-spacing:.3em}
+</style></head><body><a href="../PORTAL.html" style="position:fixed;top:8px;right:10px;z-index:9999;color:#e8c96a;font:12px monospace;text-decoration:none;background:rgba(0,0,0,.55);padding:4px 10px;border:1px solid #c9a22766;border-radius:6px">◀ TRU PORTAL</a>
+<h1>SNAKE</h1>
+<canvas id="c" width="400" height="400"></canvas>
+<p>arrows or WASD · eat the apples · don't bite yourself</p>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+const GS=20,N=20;
+let snake,dir,ndir,food,score,over,paused,tick=0,speed=8;
+function init(){
+ snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+ dir={x:1,y:0};ndir=dir;placeFood();score=0;over=false;paused=true;speed=8;document.title="snake";
+}
+function placeFood(){
+ do{food={x:Math.floor(Math.random()*N),y:Math.floor(Math.random()*N)}}
+ while(snake.some(s=>s.x===food.x&&s.y===food.y));
+}
+init();
+addEventListener("keydown",e=>{
+ const map={ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0},w:{x:0,y:-1},s:{x:0,y:1}};
+ const d=map[e.key]||map[e.key.toLowerCase&&e.key.toLowerCase()];
+ if(d){e.preventDefault();if(d.x!==-dir.x||d.y!==-dir.y)ndir=d;paused=false}
+ if(e.key===" "&&over)init();
+});
+c.onclick=()=>{if(over)init();else paused=false};
+let last=0;
+function loop(t){
+ const dt=t-last;last=t;
+ if(!paused&&!over){
+  tick+=dt;
+  if(tick>1000/speed){tick=0;
+   dir=ndir;
+   const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+   if(h.x<0||h.x>=N||h.y<0||h.y>=N||snake.some(s=>s.x===h.x&&s.y===h.y)){
+    over=true;document.title="snake — game over";
+   }else{
+    snake.unshift(h);
+    if(h.x===food.x&&h.y===food.y){
+     score+=10;placeFood();speed=Math.min(16,speed+.4);document.title="snake — "+score;
+    }else snake.pop();
+   }
+  }
+ }
+ x.fillStyle="#020803";x.fillRect(0,0,400,400);
+ x.fillStyle="#e55";x.beginPath();x.arc(food.x*GS+10,food.y*GS+10,7,0,7);x.fill();
+ snake.forEach((s,i)=>{
+  x.fillStyle=i===0?"#8f8":"#4a4";x.fillRect(s.x*GS+1,s.y*GS+1,GS-2,GS-2);
+ });
+ x.fillStyle="#ccc";x.font="13px monospace";x.fillText("score "+score,8,18);
+ if(paused&&!over){x.fillStyle="#999";x.fillText("press an arrow to start",115,200)}
+ if(over){x.fillStyle="#fff";x.font="26px monospace";x.fillText("GAME OVER",115,190);x.font="13px monospace";x.fillText("click to retry",150,220)}
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>
